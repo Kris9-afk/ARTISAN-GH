@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { BadgeCheck, MapPin, Phone, MessageCircle, Languages, Award, Briefcase, ChevronLeft, ShieldCheck, Clock } from 'lucide-react';
 import { fmtCedi } from '../data/market';
@@ -6,7 +7,8 @@ import { useStore } from '../store';
 
 export default function ArtisanDetail() {
   const { id } = useParams();
-  const { artisans, services, reviews, toggleFav, favs, showToast } = useStore();
+  const { artisans, services, reviews, toggleFav, favs, showToast, addReview } = useStore();
+  const [reviewForm, setReviewForm] = useState({ name: '', text: '', rating: 5, consent: false });
   const a = artisans.find(x => x.id === id);
   if (!a) return <div className="mx-auto max-w-3xl px-4 py-16 text-center"><p className="font-display text-3xl font-black">Artisan not found</p><Link to="/artisans" className="mt-4 inline-block rounded-full bg-[#0b3d2e] px-6 py-3 text-sm font-bold text-white">Back to artisans</Link></div>;
   const svc = services.find(s => s.id === a.trade);
@@ -94,6 +96,16 @@ export default function ArtisanDetail() {
                   </div>
                 ))}
               </div>
+              <form onSubmit={event => { event.preventDefault(); if (!reviewForm.consent) return; addReview({ id: `review-${Date.now().toString(36)}`, artisanId: a.id, name: reviewForm.name.trim(), city: a.city, rating: reviewForm.rating, text: reviewForm.text.trim(), date: new Date().toLocaleDateString('en-GH', { month: 'short', year: 'numeric' }) }); setReviewForm({ name: '', text: '', rating: 5, consent: false }); showToast('Review submitted for moderation'); }} className="mt-5 rounded-2xl bg-[#f5ead2]/55 p-4">
+                <h3 className="text-sm font-extrabold text-[#062a1f]">Share your experience</h3>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <label className="text-xs font-extrabold text-black/55">Your name<input required value={reviewForm.name} onChange={e => setReviewForm({ ...reviewForm, name: e.target.value })} className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#e8a90c]" /></label>
+                  <label className="text-xs font-extrabold text-black/55">Rating<select value={reviewForm.rating} onChange={e => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#e8a90c]"><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select></label>
+                </div>
+                <label className="mt-2 block text-xs font-extrabold text-black/55">Review<textarea required value={reviewForm.text} onChange={e => setReviewForm({ ...reviewForm, text: e.target.value })} rows={3} className="mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-[#e8a90c]" placeholder="What stood out about the job?" /></label>
+                <label className="mt-3 flex items-start gap-2 text-xs font-semibold leading-relaxed text-black/60"><input type="checkbox" required checked={reviewForm.consent} onChange={e => setReviewForm({ ...reviewForm, consent: e.target.checked })} className="mt-0.5 h-4 w-4 shrink-0 accent-[#147a5b]" /> I confirm this review is about a genuine job experience.</label>
+                <button type="submit" className="mt-3 rounded-xl bg-[#0b3d2e] px-4 py-2.5 text-xs font-extrabold text-white hover:bg-[#147a5b]">Submit review</button>
+              </form>
             </div>
           </div>
 

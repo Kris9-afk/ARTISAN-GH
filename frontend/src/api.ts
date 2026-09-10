@@ -20,9 +20,11 @@ export const api = {
   getArtisans: () => request<Artisan[]>('/artisans'),
   getServices: () => request<Service[]>('/services'),
   getReviews: () => request<Review[]>('/reviews'),
+  createReview: (review: Review) => request<Review>('/reviews', { method: 'POST', body: JSON.stringify(review) }),
   getTestimonials: () => request<{ name: string; area: string; text: string; role: string }[]>('/testimonials'),
   getCities: () => request<string[]>('/cities'),
   createArtisan: (artisan: Artisan) => request<Artisan>('/artisans', { method: 'POST', body: JSON.stringify(artisan) }),
+  deleteArtisan: (id: string) => request<{ deleted: boolean }>(`/artisans/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   createBooking: (booking: Booking) => request<Booking>('/bookings', { method: 'POST', body: JSON.stringify(booking) }),
   updateBooking: (id: string, update: Partial<Booking>) =>
     request<Booking>(`/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(update) }),

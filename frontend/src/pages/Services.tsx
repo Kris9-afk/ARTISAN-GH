@@ -14,8 +14,11 @@ export default function Services() {
   useEffect(() => {
     const id = loc.hash.replace('#', '');
     if (id) {
-      setOpen(id);
-      setTimeout(() => document.getElementById(`svc-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+      const timer = window.setTimeout(() => {
+        setOpen(id);
+        document.getElementById(`svc-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [loc.hash]);
 

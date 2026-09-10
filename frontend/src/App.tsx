@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { StoreProvider } from './store';
-import { Navbar, Footer, Toast, EmergencyFab } from './components/layout';
+import { Navbar, Footer, Toast, EmergencyFab, CookieNotice } from './components/layout';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import Artisans from './pages/Artisans';
@@ -9,6 +9,7 @@ import Booking from './pages/Booking';
 import Jobs from './pages/Jobs';
 import { HowItWorks, Join, Support } from './pages/Info';
 import Admin from './pages/Admin';
+import PolicyPage from './pages/Policies';
 
 export default function App() {
   return (
@@ -27,11 +28,15 @@ export default function App() {
             <Route path="/join" element={<Join />} />
             <Route path="/support" element={<Support />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/privacy" element={<PolicyPage kind="privacy" />} />
+            <Route path="/terms" element={<PolicyPage kind="terms" />} />
+            <Route path="/refunds" element={<PolicyPage kind="refund" />} />
             <Route path="*" element={<Home />} />
           </Routes>
           <Footer />
           <EmergencyFab />
           <Toast />
+          <CookieNotice />
         </div>
       </BrowserRouter>
     </StoreProvider>

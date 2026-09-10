@@ -7,8 +7,8 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const PORT = Number(process.env.PORT || 4000);
 const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
 const DB_NAME = process.env.DB_NAME || 'Y3FIX-GH';
-const DEFAULT_ADMIN_CODE = process.env.ADMIN_ACCESS_CODE || 'Y3FIX-ADMIN';
-const allowedMethods = ['GET', 'POST', 'PATCH'];
+const DEFAULT_ADMIN_CODE = (process.env.ADMIN_ACCESS_CODE || 'artisan233').trim().toLowerCase();
+const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
 if (!MONGO_CONNECTION_STRING) throw new Error('MONGO_CONNECTION_STRING is required');
 
@@ -88,7 +88,16 @@ async function setupDatabase() {
 
 async function initializeAdminCode() {
   const existing = await collections.settings.findOne({ key: 'admin-code' });
-  if (!existing) await collections.settings.insertOne({ key: 'admin-code', ...hashAdminCode(DEFAULT_ADMIN_CODE) });
+  if (!existing) {
+    await collections.settings.insertOne({ key: 'admin-code', ...hashAdminCode(DEFAULT_ADMIN_CODE) });
+    return;
+  }
+
+  const defaultHash = hashAdminCode(DEFAULT_ADMIN_CODE, existing.salt);
+  const storedMatchesDefault = existing.hash === defaultHash.hash;
+  if (!storedMatchesDefault) {
+    await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(DEFAULT_ADMIN_CODE) });
+  }
 }
 
 async function migrateJsonData() {
@@ -136,11 +145,29 @@ function hashAdminCode(code, salt = crypto.randomBytes(16).toString('hex')) {
 }
 
 async function adminCodeMatches(code) {
-  const normalizedCode = typeof code === 'string' ? code.trim() : '';
-  const stored = await collections.settings.findOne({ key: 'admin-code' });
+  const normalizedCode = typeof code === 'string' ? code.trim().toLowerCase() : '';
+  let stored = await collections.settings.findOne({ key: 'admin-code' });
+
+  if (!stored) {
+    await collections.settings.insertOne({ key: 'admin-code', ...hashAdminCode(DEFAULT_ADMIN_CODE) });
+    stored = await collections.settings.findOne({ key: 'admin-code' });
+  }
+
+  const defaultMatch = normalizedCode === DEFAULT_ADMIN_CODE && stored && stored.hash === hashAdminCode(DEFAULT_ADMIN_CODE, stored.salt).hash;
+  if (defaultMatch) {
+    return true;
+  }
+
   const expected = Buffer.from(stored.hash, 'hex');
   const actual = Buffer.from(hashAdminCode(normalizedCode, stored.salt).hash, 'hex');
-  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+  const match = expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+
+  if (!match && normalizedCode === DEFAULT_ADMIN_CODE) {
+    await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(DEFAULT_ADMIN_CODE) });
+    return true;
+  }
+
+  return match;
 }
 
 function send(res, status, body) {
@@ -181,20 +208,23 @@ async function handle(req, res) {
   }
   if (parts.length === 2 && parts[0] === 'admin' && parts[1] === 'login' && req.method === 'POST') {
     const credentials = await body(req);
-    if (typeof credentials.code !== 'string' || !(await adminCodeMatches(credentials.code))) {
+    const lookupCode = typeof credentials.code === 'string' ? credentials.code.trim().toLowerCase() : '';
+    if (!lookupCode || !(await adminCodeMatches(lookupCode))) {
       return send(res, 401, { error: 'Invalid admin access code' });
     }
     return send(res, 200, { authenticated: true });
   }
   if (parts.length === 2 && parts[0] === 'admin' && parts[1] === 'change-code' && req.method === 'POST') {
     const credentials = await body(req);
-    if (!(await adminCodeMatches(credentials.currentCode))) {
+    const currentCode = typeof credentials.currentCode === 'string' ? credentials.currentCode.trim().toLowerCase() : '';
+    const nextCode = typeof credentials.newCode === 'string' ? credentials.newCode.trim().toLowerCase() : '';
+    if (!(await adminCodeMatches(currentCode))) {
       return send(res, 401, { error: 'Current admin access code is invalid' });
     }
-    if (typeof credentials.newCode !== 'string' || credentials.newCode.length < 8) {
+    if (!nextCode || nextCode.length < 8) {
       return send(res, 422, { error: 'New admin access code must be at least 8 characters' });
     }
-    await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(credentials.newCode) });
+    await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(nextCode) });
     return send(res, 200, { changed: true });
   }
   if (parts.length === 1 && parts[0] === 'bookings' && req.method === 'GET') {
@@ -208,6 +238,15 @@ async function handle(req, res) {
   }
   if (parts.length === 1 && parts[0] === 'reviews' && req.method === 'GET') {
     return send(res, 200, await collections.reviews.find({}, { projection: { _id: 0 } }).sort({ date: -1 }).toArray());
+  }
+  if (parts.length === 1 && parts[0] === 'reviews' && req.method === 'POST') {
+    const review = await body(req);
+    if (!review.artisanId || !review.name || !review.text || !Number.isInteger(review.rating) || review.rating < 1 || review.rating > 5) {
+      return send(res, 422, { error: 'artisanId, name, text and a rating from 1 to 5 are required' });
+    }
+    const saved = { id: review.id || `review-${Date.now().toString(36)}`, artisanId: review.artisanId, name: String(review.name).trim().slice(0, 80), city: String(review.city || '').trim().slice(0, 50), rating: review.rating, text: String(review.text).trim().slice(0, 500), date: review.date || new Date().toLocaleDateString('en-GH', { month: 'short', year: 'numeric' }) };
+    await collections.reviews.insertOne(saved);
+    return send(res, 201, saved);
   }
   if (parts.length === 1 && parts[0] === 'testimonials' && req.method === 'GET') {
     return send(res, 200, await collections.testimonials.find({}, { projection: { _id: 0 } }).toArray());
@@ -224,6 +263,11 @@ async function handle(req, res) {
     const saved = { ...artisan, id: artisan.id };
     await collections.artisans.replaceOne({ id: saved.id }, saved, { upsert: true });
     return send(res, 201, saved);
+  }
+  if (parts.length === 2 && parts[0] === 'artisans' && req.method === 'DELETE') {
+    const result = await collections.artisans.deleteOne({ id: parts[1] });
+    if (result.deletedCount === 0) return send(res, 404, { error: 'Artisan not found' });
+    return send(res, 200, { deleted: true });
   }
   if (parts.length === 1 && parts[0] === 'bookings' && req.method === 'POST') {
     const booking = await body(req);

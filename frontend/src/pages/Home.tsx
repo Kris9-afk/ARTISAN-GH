@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, MapPin, ShieldCheck, Star, ChevronRight, BadgeCheck, Clock, ArrowRight, Quote, Wrench, Siren } from 'lucide-react';
 import { fmtCedi } from '../data/market';
-import { SectionHead, ArtisanCard, TradeIcon, Stars, KenteBar } from '../components/ui';
+import { SectionHead, ArtisanCard, TradeIcon, KenteBar } from '../components/ui';
 import { useStore } from '../store';
 
 export default function Home() {
@@ -13,25 +13,6 @@ export default function Home() {
   const [city, setCity] = useState('Accra');
   const selectedCity = new URLSearchParams(location.search).get('city');
   const { services, artisans, cities, testimonials } = useStore();
-
-  const GHANA_REGIONS = [
-    { name: 'Upper West', path: 'M117 112 L175 78 L225 97 L205 147 L156 166 L128 146 Z', labelX: 120, labelY: 118 },
-    { name: 'Upper East', path: 'M227 96 L298 72 L344 82 L334 126 L285 145 L234 138 Z', labelX: 255, labelY: 112 },
-    { name: 'North East', path: 'M344 82 L397 85 L424 110 L414 143 L352 148 L334 126 Z', labelX: 390, labelY: 118 },
-    { name: 'Northern', path: 'M236 154 L321 144 L404 153 L454 178 L438 247 L366 266 L294 254 L247 196 Z', labelX: 375, labelY: 196 },
-    { name: 'Savannah', path: 'M223 197 L292 164 L359 190 L351 258 L303 287 L236 270 L205 229 Z', labelX: 200, labelY: 218 },
-    { name: 'Bono East', path: 'M248 277 L315 259 L356 274 L344 328 L282 353 L222 332 L212 294 Z', labelX: 292, labelY: 300 },
-    { name: 'Bono', path: 'M156 266 L216 264 L202 334 L138 348 L112 303 Z', labelX: 117, labelY: 298 },
-    { name: 'Ahafo', path: 'M114 313 L155 312 L200 336 L188 388 L134 396 L92 356 Z', labelX: 100, labelY: 350 },
-    { name: 'Western North', path: 'M96 367 L160 360 L198 389 L184 454 L112 461 L70 420 Z', labelX: 86, labelY: 408 },
-    { name: 'Western', path: 'M168 414 L260 388 L301 430 L276 489 L211 498 L146 475 L122 432 Z', labelX: 170, labelY: 448 },
-    { name: 'Ashanti', path: 'M256 308 L360 288 L392 309 L405 356 L357 401 L298 388 L258 346 Z', labelX: 300, labelY: 340 },
-    { name: 'Eastern', path: 'M394 292 L462 287 L512 302 L520 368 L460 389 L405 371 L389 325 Z', labelX: 438, labelY: 334 },
-    { name: 'Volta', path: 'M471 349 L538 342 L575 362 L592 420 L525 449 L470 408 Z', labelX: 555, labelY: 390 },
-    { name: 'Oti', path: 'M446 248 L519 220 L571 248 L562 318 L493 334 L448 292 Z', labelX: 514, labelY: 272 },
-    { name: 'Central', path: 'M286 393 L348 386 L390 406 L388 468 L338 490 L286 465 Z', labelX: 330, labelY: 440 },
-    { name: 'Greater Accra', path: 'M404 394 L489 385 L544 418 L529 478 L460 494 L404 458 Z', labelX: 480, labelY: 448 }
-  ];
 
   const goSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -49,10 +30,7 @@ export default function Home() {
         </div>
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-14 pt-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-20 lg:pt-16">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-[#fcd116] backdrop-blur">
-              <span className="h-2 w-2 rounded-full bg-[#25d366] animate-pulse" /> 312 artisans online now across Ghana
-            </div>
-            <h1 className="font-display mt-4 text-4xl font-black leading-[1.05] text-white sm:text-5xl lg:text-[58px]">
+            <h1 className="font-display mt-0 text-4xl font-black leading-[1.05] text-white sm:text-5xl lg:text-[58px]">
               Plumber, electrician, mechanic <span className="italic text-[#fcd116]">booked in minutes.</span>
             </h1>
             <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/75">

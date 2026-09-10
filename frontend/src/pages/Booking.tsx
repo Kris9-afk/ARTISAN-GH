@@ -13,7 +13,6 @@ const MOMOS = [
   { id: 'AirtelTigo', color: '#0e5aa7', note: 'Pay to 057 000 0000' },
 ];
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
 const plusDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 
 export default function Booking() {
@@ -35,12 +34,13 @@ export default function Booking() {
   const [phone, setPhone] = useState('');
   const [momo, setMomo] = useState('MTN MoMo');
   const [momoNum, setMomoNum] = useState('');
+  const [consent, setConsent] = useState(false);
   const [done, setDone] = useState<Bk | null>(null);
   const [paying, setPaying] = useState(false);
 
+  const pros = useMemo(() => artisans.filter(a => a.trade === trade), [artisans, trade]);
   const svc = services.find(s => s.id === trade);
   if (!svc) return null;
-  const pros = useMemo(() => artisans.filter(a => a.trade === trade), [artisans, trade]);
   const artisan = artisanId === 'any' ? null : artisans.find(a => a.id === artisanId) || null;
 
   const tasks: BookedTask[] = svc.tasks.filter(t => picked[t.id]).map(t => ({ id: t.id, label: t.label, price: t.price, qty: picked[t.id] }));
@@ -63,7 +63,7 @@ export default function Booking() {
     if (step === 1) return tasks.length > 0;
     if (step === 2) return date && time;
     if (step === 3) return address.trim().length > 3 && cities.includes(city);
-    if (step === 4) return name.trim().length > 1 && phone.replace(/\D/g, '').length >= 9 && momoNum.replace(/\D/g, '').length >= 9;
+    if (step === 4) return name.trim().length > 1 && phone.replace(/\D/g, '').length >= 9 && momoNum.replace(/\D/g, '').length >= 9 && consent;
     return true;
   };
 
@@ -293,6 +293,10 @@ export default function Booking() {
                 <p className="mt-3 flex items-start gap-2 rounded-2xl bg-[#147a5b]/10 p-3 text-xs font-semibold leading-relaxed text-[#0b3d2e]">
                   <ShieldCheck size={16} className="mt-0.5 shrink-0" /> You approve the MoMo prompt on your phone. Money is held safely and released to the artisan only after you confirm the job is done. 7-day re-fix guarantee included.
                 </p>
+                <label className="mt-3 flex items-start gap-2 text-xs font-semibold leading-relaxed text-black/60">
+                  <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#147a5b]" />
+                  <span>I agree to the <Link to="/privacy" className="font-extrabold text-[#147a5b] underline">Privacy Policy</Link>, <Link to="/terms" className="font-extrabold text-[#147a5b] underline">Terms</Link>, and <Link to="/refunds" className="font-extrabold text-[#147a5b] underline">Refund Policy</Link>.</span>
+                </label>
               </motion.div>
             )}
           </AnimatePresence>
@@ -345,4 +349,3 @@ export default function Booking() {
   );
 }
 
-export { todayStr };

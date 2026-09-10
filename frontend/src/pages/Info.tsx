@@ -41,6 +41,7 @@ export function Join() {
   const { showToast } = useStore();
   const [form, setForm] = useState({ name: '', phone: '', trade: ['Plumbing'], city: 'Accra', exp: '', skills: [] as string[] });
   const [sent, setSent] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [tradeOpen, setTradeOpen] = useState(false);
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const skillOptions = ['Leak repairs', 'Installations', 'Maintenance', 'Diagnostics', 'Wiring', 'Tiling', 'Painting', 'Carpentry', 'Emergency call-outs', 'Preventive servicing'];
@@ -81,7 +82,7 @@ export function Join() {
               <button onClick={() => setSent(false)} className="mt-4 text-sm font-bold text-[#147a5b] underline">Submit another application</button>
             </div>
           ) : (
-            <form onSubmit={e => { e.preventDefault(); setSent(true); showToast('Application sent — we will call you soon!'); }}>
+            <form onSubmit={e => { e.preventDefault(); if (!consent) return; setSent(true); showToast('Application sent — we will call you soon!'); }}>
               <h3 className="font-display text-xl font-black text-[#062a1f]">Apply in 60 seconds</h3>
               <div className="mt-4 space-y-3">
                 <label className="block"><span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Full name</span>
@@ -144,7 +145,8 @@ export function Join() {
                     </p>
                 </fieldset>
                 <p className="flex items-start gap-2 rounded-2xl bg-[#f5ead2]/70 p-3 text-xs font-semibold text-black/60"><BadgeCheck size={15} className="mt-0.5 shrink-0 text-[#147a5b]" /> Bring your Ghana Card + any trade certificate to verification. No certificates? Our free trade test can still qualify you.</p>
-                <button className="w-full rounded-2xl bg-[#0b3d2e] py-3.5 text-sm font-extrabold text-white hover:bg-[#147a5b]">Submit application</button>
+                <label className="flex items-start gap-2 text-xs font-semibold leading-relaxed text-black/60"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#147a5b]" /> <span>I agree to the <Link to="/privacy" className="font-extrabold text-[#147a5b] underline">Privacy Policy</Link> and consent to being contacted about this application.</span></label>
+                <button type="submit" className="w-full rounded-2xl bg-[#0b3d2e] py-3.5 text-sm font-extrabold text-white hover:bg-[#147a5b]">Submit application</button>
               </div>
             </form>
           )}

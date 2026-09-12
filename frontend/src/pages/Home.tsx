@@ -200,30 +200,35 @@ export default function Home() {
             ))}
           </div>
           {/* city coverage */}
-          <div className="mt-8 overflow-hidden rounded-full border border-[#0b3d2e]/10 bg-[#f5ead2] px-4 py-4 shadow-inner shadow-white/40 sm:px-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 text-sm font-extrabold text-[#062a1f]">
-                <span className="grid h-5 w-5 place-items-center rounded-full border border-[#0b3d2e]/20 bg-white/60 text-[10px]">
-                  <MapPin size={11} className="text-[#0b3d2e]" />
-                </span>
-                NOW SERVING:
+          <div className="mt-8 overflow-hidden rounded-[28px] border border-[#0b3d2e]/10 bg-[#f5ead2] p-3 shadow-inner shadow-white/40 sm:rounded-full sm:px-6 sm:py-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+              <div className="flex items-center justify-between gap-3 px-1 sm:shrink-0 sm:px-0">
+                <div className="inline-flex items-center gap-2 text-xs font-black tracking-[0.08em] text-[#062a1f] sm:text-sm">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0b3d2e] text-[#fcd116] shadow-sm sm:h-5 sm:w-5 sm:bg-white/60 sm:text-[#0b3d2e] sm:shadow-none">
+                  <MapPin size={11} className="text-[#fcd116] sm:text-[#0b3d2e]" />
+                  </span>
+                  <span>NOW SERVING</span>
+                </div>
+                <span className="rounded-full bg-white/65 px-2.5 py-1 text-[10px] font-extrabold text-[#0b3d2e]/60 sm:hidden">10 cities</span>
               </div>
-              {cities.map(c => {
-                const active = selectedCity === c;
-                return (
-                  <button
-                    key={c}
-                    onClick={() => nav(`/artisans?city=${c}`)}
-                    className={`rounded-full border px-4 py-2 text-base font-extrabold transition ${
-                      active
-                        ? 'border-[#0b3d2e] bg-[#0b3d2e] text-white shadow-[0_8px_20px_-12px_rgba(11,61,46,0.9)]'
-                        : 'border-[#0b3d2e]/25 bg-[#0b3d2e] text-[#fdf8ef] hover:bg-[#147a5b]'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
+              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-1 sm:flex-wrap sm:gap-3">
+                {cities.map(c => {
+                  const active = selectedCity === c;
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => nav(`/artisans?city=${c}`)}
+                      className={`min-w-0 rounded-full border px-2 py-2.5 text-center text-xs font-extrabold transition sm:px-4 sm:py-2 sm:text-base ${
+                        active
+                          ? 'border-[#0b3d2e] bg-[#0b3d2e] text-white shadow-[0_8px_20px_-12px_rgba(11,61,46,0.9)]'
+                          : 'border-[#0b3d2e]/25 bg-[#0b3d2e] text-[#fdf8ef] hover:bg-[#147a5b]'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

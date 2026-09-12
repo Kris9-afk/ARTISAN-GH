@@ -9,5 +9,8 @@ export default defineConfig({
       outDir: '../dist',
       emptyOutDir: true,
     },
+    preview: {
+      allowedHosts: ['artisan-gh.onrender.com'],
+    },
     envPrefix: 'VITE_',
 })

@@ -30,7 +30,7 @@ interface Store {
   updateStatus: (id: string, s: JobStatus) => void;
   rateBooking: (id: string, r: number) => void;
   chats: Record<string, ChatMsg[]>;
-  sendChat: (bookingId: string, text: string, artisanName: string) => void;
+  sendChat: (bookingId: string, text: string) => void;
   toast: string | null;
   showToast: (t: string) => void;
   userName: string; setUserName: (s: string) => void;

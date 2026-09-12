@@ -1,5 +1,5 @@
 import type { Artisan, Review, Service } from './data/market';
-import type { Booking, ChatMsg, JobStatus } from './store';
+import type { Booking, ChatMsg } from './store';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
@@ -33,4 +33,3 @@ export const api = {
   getMessages: (id: string) => request<ChatMsg[]>(`/bookings/${encodeURIComponent(id)}/messages`),
 };
 
-export type BookingUpdate = { status?: JobStatus; rating?: number };

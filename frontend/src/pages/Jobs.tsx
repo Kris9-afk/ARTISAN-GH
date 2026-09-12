@@ -114,7 +114,7 @@ export default function Jobs() {
                           </div>
                         ))}
                       </div>
-                      <form onSubmit={e => { e.preventDefault(); if (draft.trim()) { sendChat(b.id, draft.trim(), b.artisanName.split(' ')[0]); setDraft(''); } }}
+                      <form onSubmit={e => { e.preventDefault(); if (draft.trim()) { sendChat(b.id, draft.trim()); setDraft(''); } }}
                         className="flex gap-2 bg-white p-2">
                         <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Type a message…" className="w-full rounded-xl bg-black/5 px-3 py-2 text-xs font-semibold outline-none" />
                         <button className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#0b3d2e] text-white"><Send size={14} /></button>

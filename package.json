@@ -8,6 +8,7 @@
     "backend": "node backend/server.cjs",
     "dev:full": "npm run backend & npm run dev",
     "build": "tsc -b && vite build",
+    "start": "vite preview --host 0.0.0.0 --port $PORT",
     "lint": "eslint .",
     "preview": "vite preview"
   },

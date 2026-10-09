@@ -7,7 +7,7 @@ import { useStore } from '../store';
 
 export default function ArtisanDetail() {
   const { id } = useParams();
-  const { artisans, services, reviews, toggleFav, favs, showToast, addReview } = useStore();
+  const { artisans, services, reviews, addReview, showToast } = useStore();
   const [reviewForm, setReviewForm] = useState({ name: '', text: '', rating: 5, consent: false });
   const a = artisans.find(x => x.id === id);
   if (!a) return <div className="mx-auto max-w-3xl px-4 py-16 text-center"><p className="font-display text-3xl font-black">Artisan not found</p><Link to="/artisans" className="mt-4 inline-block rounded-full bg-[#0b3d2e] px-6 py-3 text-sm font-bold text-white">Back to artisans</Link></div>;
@@ -15,7 +15,6 @@ export default function ArtisanDetail() {
   const revs = reviews.filter(r => r.artisanId === a.id);
   if (!svc) return null;
   const similar = artisans.filter(x => x.trade === a.trade && x.id !== a.id).slice(0, 3);
-  const liked = favs.includes(a.id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -52,7 +51,6 @@ export default function ArtisanDetail() {
               {[
                 { v: `${a.yearsExp} yrs`, l: 'Experience' },
                 { v: `~${a.responseMins}m`, l: 'Responds in' },
-                { v: fmtCedi(a.priceFrom), l: 'Starting at' },
               ].map(s => (
                 <div key={s.l} className="px-2 py-4">
                   <p className="tick font-display text-xl font-black text-[#0b3d2e]">{s.v}</p>
@@ -123,15 +121,12 @@ export default function ArtisanDetail() {
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="overflow-hidden rounded-[28px] bg-[#062a1f] p-6 text-white shadow-2xl">
             <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#e8a90c]">Book {a.name.split(' ')[0]}</p>
-            <p className="tick font-display mt-1 text-3xl font-black">from {fmtCedi(a.priceFrom)}</p>
-            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-white/60"><Clock size={12} /> Responds in ~{a.responseMins} mins · Free cancellation 2hrs before</p>
+            <p className="tick font-display mt-1 text-3xl font-black">—</p>
+            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-white/60"><Clock size={12} /> Free cancellation 2hrs before</p>
             <div className="mt-4 space-y-2.5">
               <Link to={`/book?artisan=${a.id}`} className="block rounded-2xl bg-[#e8a90c] py-3.5 text-center text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116]">Book this artisan</Link>
               <a href={`tel:${a.phone.replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 rounded-2xl border border-white/25 py-3.5 text-sm font-bold hover:bg-white/10"><Phone size={15} /> {a.phone}</a>
               <Link to={`/book?artisan=${a.id}`} className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 py-3.5 text-sm font-bold hover:bg-white/15"><MessageCircle size={15} /> Chat before booking</Link>
-              <button onClick={() => { toggleFav(a.id); showToast(liked ? 'Removed from favourites' : 'Saved to favourites'); }} className="w-full rounded-2xl py-2.5 text-xs font-bold text-white/60 hover:text-[#fcd116]">
-                {liked ? '★ Saved to favourites — tap to remove' : '☆ Save to favourites'}
-              </button>
             </div>
             <div className="mt-5 rounded-2xl bg-white/[0.07] p-4 text-xs leading-relaxed text-white/65">
               <p className="flex items-center gap-1.5 font-extrabold text-[#fcd116]"><ShieldCheck size={14} /> Y3FIX-GH Guarantee</p>

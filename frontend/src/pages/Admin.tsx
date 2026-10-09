@@ -39,7 +39,10 @@ export default function Admin() {
       sessionStorage.setItem('agh-admin', '1');
       setAuthenticated(true);
       setCode('');
-    }).catch(() => showToast('Invalid admin access code'));
+    }).catch(error => {
+      const invalidCode = error instanceof Error && error.message.includes('401');
+      showToast(invalidCode ? 'Invalid admin access code' : 'Admin service unavailable. Check the backend and database connection.');
+    });
   };
 
   const add = (event: FormEvent) => {

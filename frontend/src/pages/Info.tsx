@@ -97,14 +97,14 @@ export function Join() {
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="relative">
-                     <span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Trades</span>
+                     <span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Trades & skills</span>
                      <button type="button" onClick={() => setTradeOpen(open => !open)} className="mt-1.5 flex w-full items-center justify-between rounded-2xl border-2 border-black/10 px-4 py-3 text-left text-sm font-bold outline-none focus:border-[#e8a90c]">
-                       <span className="truncate">{form.trade.length ? form.trade.join(', ') : 'Select your trades'}</span>
+                       <span className="truncate">{form.trade.length ? form.trade.join(', ') : 'Select trades'}{form.skills.length ? ` · ${form.skills.length} skill${form.skills.length === 1 ? '' : 's'}` : ''}</span>
                        <ChevronDown size={17} className={`shrink-0 transition ${tradeOpen ? 'rotate-180' : ''}`} />
                      </button>
                      {tradeOpen && (
-                       <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-2xl border border-black/10 bg-white p-2 shadow-xl">
-                         <p className="px-2 py-1 text-[11px] font-bold text-black/45">Tap every trade you offer</p>
+                       <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[70vh] overflow-y-auto rounded-2xl border border-black/10 bg-white p-2 shadow-xl">
+                         <p className="px-2 py-1 text-[11px] font-bold text-black/45">Trades · select all that apply</p>
                          <div className="grid gap-1 sm:grid-cols-2">
                            {['Plumbing','Electrical','Carpentry','Painting','Masonry & Tiling','Auto Mechanic','AC & Refrigeration','Cleaning','Welding','Solar & Generator','Pest Control','Appliance Repair'].map(trade => (
                              <button type="button" key={trade} onClick={() => toggleTrade(trade)} className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-extrabold ${form.trade.includes(trade) ? 'bg-[#0b3d2e] text-white' : 'text-black/65 hover:bg-[#f5ead2]'}`}>
@@ -113,37 +113,41 @@ export function Join() {
                              </button>
                            ))}
                          </div>
+                         <fieldset className="mt-2 border-t border-black/10 pt-2">
+                           <legend className="px-2 text-[11px] font-bold text-black/45">Skills · select all that apply</legend>
+                           <div className="flex flex-wrap gap-1">
+                             {skillOptions.map(skill => (
+                               <button type="button" key={skill} onClick={() => toggleSkill(skill)}
+                                 className={`rounded-full border px-3 py-2 text-xs font-extrabold transition ${form.skills.includes(skill) ? 'border-[#0b3d2e] bg-[#0b3d2e] text-white' : 'border-black/10 bg-white text-black/60 hover:border-[#147a5b] hover:text-[#0b3d2e]'}`}
+                                 aria-pressed={form.skills.includes(skill)}>
+                                 {form.skills.includes(skill) ? '✓ ' : ''}{skill}
+                               </button>
+                             ))}
+                           </div>
+                         </fieldset>
                          <button type="button" onClick={() => setTradeOpen(false)} className="mt-2 w-full rounded-xl bg-[#e8a90c] px-3 py-2.5 text-xs font-extrabold text-[#062a1f]">Done</button>
                        </div>
                      )}
-                     <span className="mt-1 block text-[11px] font-semibold text-black/40">{form.trade.length ? `${form.trade.length} trade${form.trade.length === 1 ? '' : 's'} selected` : 'No trades selected yet'}</span>
+                     <span className="mt-1 block text-[11px] font-semibold text-black/40">{form.trade.length} trade{form.trade.length === 1 ? '' : 's'} · {form.skills.length} skill{form.skills.length === 1 ? '' : 's'} selected</span>
                   </div>
                   <label className="block"><span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Years of experience</span>
                     <input value={form.exp} onChange={e => set('exp', e.target.value)} placeholder="e.g. 6" inputMode="numeric" className="mt-1.5 w-full rounded-2xl border-2 border-black/10 px-4 py-3 text-sm font-semibold outline-none focus:border-[#e8a90c]" /></label>
                 </div>
-                <fieldset>
-                    <legend className="text-xs font-extrabold uppercase tracking-widest text-black/45">Skills (select all that apply)</legend>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {skillOptions.map(skill => (
-                        <button
-                          type="button"
-                          key={skill}
-                          onClick={() => toggleSkill(skill)}
-                          className={`rounded-full border px-3 py-2 text-xs font-extrabold transition ${
-                            form.skills.includes(skill)
-                              ? 'border-[#0b3d2e] bg-[#0b3d2e] text-white'
-                              : 'border-black/10 bg-white text-black/60 hover:border-[#147a5b] hover:text-[#0b3d2e]'
-                          }`}
-                          aria-pressed={form.skills.includes(skill)}
-                        >
-                          {form.skills.includes(skill) ? '✓ ' : ''}{skill}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="mt-1.5 text-xs font-semibold text-black/40">
-                      {form.skills.length ? `${form.skills.length} skill${form.skills.length === 1 ? '' : 's'} selected` : 'Choose one or more skills'}
-                    </p>
-                </fieldset>
+                <label className="block">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Add your ID</span>
+                  <span className="mt-1 block text-xs font-semibold text-black/50">Ghana Card</span>
+                  <input required type="text" placeholder="GHA-XXXXXXXXX-X" autoCapitalize="characters" className="mt-1.5 w-full rounded-2xl border-2 border-black/10 px-4 py-3 text-sm font-semibold outline-none focus:border-[#e8a90c]" />
+                </label>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Ghana Card front</span>
+                    <input required type="file" accept="image/*" className="mt-1.5 block w-full rounded-2xl border-2 border-black/10 px-3 py-2.5 text-sm font-semibold text-black/65 file:mr-3 file:rounded-lg file:border-0 file:bg-[#f5ead2] file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-[#062a1f]" />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-extrabold uppercase tracking-widest text-black/45">Ghana Card back</span>
+                    <input required type="file" accept="image/*" className="mt-1.5 block w-full rounded-2xl border-2 border-black/10 px-3 py-2.5 text-sm font-semibold text-black/65 file:mr-3 file:rounded-lg file:border-0 file:bg-[#f5ead2] file:px-3 file:py-2 file:text-xs file:font-extrabold file:text-[#062a1f]" />
+                  </label>
+                </div>
                 <p className="flex items-start gap-2 rounded-2xl bg-[#f5ead2]/70 p-3 text-xs font-semibold text-black/60"><BadgeCheck size={15} className="mt-0.5 shrink-0 text-[#147a5b]" /> Bring your Ghana Card + any trade certificate to verification. No certificates? Our free trade test can still qualify you.</p>
                 <label className="flex items-start gap-2 text-xs font-semibold leading-relaxed text-black/60"><input type="checkbox" required checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[#147a5b]" /> <span>I agree to the <Link to="/privacy" className="font-extrabold text-[#147a5b] underline">Privacy Policy</Link> and consent to being contacted about this application.</span></label>
                 <button type="submit" className="w-full rounded-2xl bg-[#0b3d2e] py-3.5 text-sm font-extrabold text-white hover:bg-[#147a5b]">Submit application</button>

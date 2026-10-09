@@ -19,7 +19,7 @@ export interface Artisan {
 }
 export interface Review { id: string; artisanId: string; name: string; city: string; rating: number; text: string; date: string }
 
-export const CITIES = ['Accra','Kumasi','Takoradi','Tamale','Cape Coast','Ho','Sunyani','Koforidua','Tema','Kasoa'];
+export const CITIES = ['Accra','Kumasi','Takoradi','Tamale','Cape Coast','Sunyani','Koforidua','Tema'];
 
 export const SERVICES: Service[] = [
   { id: 'plumbing', name: 'Plumbing', twi: 'Nsuo dwumadi', tagline: 'Leaks, tanks, heaters & fittings', icon: 'wrench', image: '/images/plumber.jpg', baseFrom: 80, popular: true,

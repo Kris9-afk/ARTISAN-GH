@@ -1,4 +1,4 @@
-import { Star, BadgeCheck, MapPin, Heart, Clock, Phone } from 'lucide-react';
+import { Star, MapPin, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Artisan } from '../data/market';
 import { fmtCedi } from '../data/market';
@@ -52,8 +52,7 @@ export function TradeIcon({ icon, size = 22 }: { icon: string; size?: number }) 
 }
 
 export function ArtisanCard({ a, compact }: { a: Artisan; compact?: boolean }) {
-  const { favs, toggleFav, services } = useStore();
-  const liked = favs.includes(a.id);
+  const { services } = useStore();
   const svc = services.find(service => service.id === a.trade);
   if (!svc) return null;
   return (
@@ -67,25 +66,10 @@ export function ArtisanCard({ a, compact }: { a: Artisan; compact?: boolean }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        <div className="absolute left-3 top-3 flex items-center gap-2">
-          {a.verified && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-[#0b3d2e]"><BadgeCheck size={13} className="text-[#147a5b]" /> Verified</span>
-          )}
-          {a.availableNow && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#147a5b] px-2.5 py-1 text-[11px] font-bold text-white"><span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> Available</span>
-          )}
-        </div>
-        <button onClick={() => toggleFav(a.id)} aria-label="save" className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full backdrop-blur transition ${liked ? 'bg-[#ce1126] text-white' : 'bg-white/90 text-black/60 hover:text-[#ce1126]'}`}>
-          <Heart size={16} className={liked ? 'fill-white' : ''} />
-        </button>
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-widest text-[#fcd116]">{svc.name}</p>
             <p className="font-display text-xl font-bold text-white leading-none mt-0.5">{a.name}</p>
-          </div>
-          <div className="rounded-2xl bg-white/95 px-2.5 py-1.5 text-right">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-black/50">from</p>
-            <p className="tick text-sm font-extrabold text-[#0b3d2e]">{fmtCedi(a.priceFrom)}</p>
           </div>
         </div>
       </div>
@@ -106,7 +90,6 @@ export function ArtisanCard({ a, compact }: { a: Artisan; compact?: boolean }) {
           <Link to={`/book?artisan=${a.id}`} className="flex-1 rounded-xl bg-[#e8a90c] px-3 py-2.5 text-center text-sm font-extrabold text-[#062a1f] transition hover:bg-[#fcd116]">Book now</Link>
           <a href={`tel:${a.phone.replace(/\s/g, '')}`} className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 text-[#0b3d2e] hover:bg-[#f5ead2]" aria-label="call"><Phone size={16} /></a>
         </div>
-        <p className="mt-2.5 flex items-center gap-1 text-[11px] font-semibold text-black/45"><Clock size={12} /> Responds in ~{a.responseMins} mins · {a.jobsDone} jobs done</p>
       </div>
     </div>
   );

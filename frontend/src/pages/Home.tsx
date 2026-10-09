@@ -31,35 +31,28 @@ export default function Home() {
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-14 pt-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-20 lg:pt-16">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="font-display mt-0 text-4xl font-black leading-[1.05] text-white sm:text-5xl lg:text-[58px]">
-              Plumber, electrician, mechanic <span className="italic text-[#fcd116]">booked in minutes.</span>
+              Plumber, electrician, mechanic <span className="text-[#fcd116]">booked in minutes.</span>
             </h1>
             <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/75">
               ARTISAN-GH connects you to <strong className="text-white">verified Ghanaian pros</strong> with upfront GH₵ prices.
               No more “come tomorrow” stories — track your job live and pay safely with MoMo.
             </p>
 
-            <form onSubmit={goSearch} className="mt-6 rounded-3xl bg-white p-2.5 shadow-2xl">
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <label className="flex flex-1 items-center gap-2 rounded-2xl bg-[#f5ead2]/60 px-4 py-3">
+            <form onSubmit={goSearch} className="mt-6 rounded-[28px] bg-white p-2.5 shadow-2xl">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <label className="flex flex-1 items-center gap-3 rounded-2xl bg-[#f5ead2]/60 px-4 py-4">
                   <Search size={18} className="shrink-0 text-[#0b3d2e]" />
-                  <input value={q} onChange={e => setQ(e.target.value)} placeholder="What do you need? e.g. plumber, AC…" className="w-full bg-transparent text-sm font-semibold text-[#062a1f] outline-none placeholder:text-black/40" />
+                  <input value={q} onChange={e => setQ(e.target.value)} placeholder="What do you need? e.g. plumber, AC…" className="w-full bg-transparent text-base font-semibold text-[#062a1f] outline-none placeholder:text-black/40" />
                 </label>
-                <label className="flex items-center gap-2 rounded-2xl bg-[#f5ead2]/60 px-4 py-3 sm:w-44">
+                <label className="flex items-center gap-3 rounded-2xl bg-[#f5ead2]/60 px-4 py-4 sm:w-48">
                   <MapPin size={18} className="shrink-0 text-[#0b3d2e]" />
-                  <select value={city} onChange={e => setCity(e.target.value)} className="w-full bg-transparent text-sm font-bold text-[#062a1f] outline-none">
+                  <select value={city} onChange={e => setCity(e.target.value)} className="w-full bg-transparent text-base font-bold text-[#062a1f] outline-none">
                     {cities.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </label>
-                <button className="rounded-2xl bg-[#0b3d2e] px-7 py-3 text-sm font-extrabold text-white transition hover:bg-[#147a5b]">
+                <button className="rounded-2xl bg-[#0b3d2e] px-8 py-4 text-sm font-extrabold text-white transition hover:bg-[#147a5b]">
                   Find help
                 </button>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 px-2 pb-1 pt-2.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-black/40">Popular:</span>
-                {['Leaking tap', 'Ceiling fan', 'Car service', 'Deep clean'].map(t => (
-                  <button type="button" key={t} onClick={() => { setQ(t); nav(`/artisans?search=${encodeURIComponent(t)}&city=${city}`); }}
-                    className="rounded-full border border-black/10 px-3 py-1 text-xs font-bold text-[#0b3d2e] hover:bg-[#f5ead2]">{t}</button>
-                ))}
               </div>
             </form>
 
@@ -150,7 +143,7 @@ export default function Home() {
       {/* TOP ARTISANS */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHead kicker="Top rated this week" title="Meet Ghana's finest hands" sub="Every badge means Ghana Card + trade certificate checked by our team." />
+          <SectionHead kicker="Top rated this week" title="Trusted professionals" sub="Skilled local pros ready to help in your area." />
           <Link to="/artisans" className="inline-flex items-center gap-1.5 rounded-full border border-black/15 px-5 py-2.5 text-sm font-extrabold text-[#0b3d2e] hover:bg-[#0b3d2e] hover:text-white">Browse all <ArrowRight size={15} /></Link>
         </div>
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -1,7 +1,6 @@
 import { Star, MapPin, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Artisan } from '../data/market';
-import { fmtCedi } from '../data/market';
 import { useStore } from '../store';
 
 export function Stars({ value, size = 14 }: { value: number; size?: number }) {

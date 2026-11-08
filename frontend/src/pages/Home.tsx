@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, MapPin, ShieldCheck, Star, ChevronRight, BadgeCheck, Clock, ArrowRight, Quote, Wrench, Siren } from 'lucide-react';
-import { fmtCedi } from '../data/market';
+import { Search, MapPin, ShieldCheck, Star, ChevronRight, BadgeCheck, PhoneCall, ArrowRight, Quote } from 'lucide-react';
 import { SectionHead, ArtisanCard, TradeIcon, KenteBar } from '../components/ui';
 import { useStore } from '../store';
 
@@ -31,11 +30,10 @@ export default function Home() {
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-14 pt-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:pb-20 lg:pt-16">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="font-display mt-0 text-4xl font-black leading-[1.05] text-white sm:text-5xl lg:text-[58px]">
-              Plumber, electrician, mechanic <span className="text-[#fcd116]">booked in minutes.</span>
+              Find a skilled <span className="text-[#fcd116]">local artisan.</span>
             </h1>
             <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/75">
-              ARTISAN-GH connects you to <strong className="text-white">verified Ghanaian pros</strong> with upfront GH₵ prices.
-              No more “come tomorrow” stories — track your job live and pay safely with MoMo.
+              Browse artisan profiles, compare experience and reviews, then call or message directly to make arrangements that work for you.
             </p>
 
             <form onSubmit={goSearch} className="mt-6 rounded-[28px] bg-white p-2.5 shadow-2xl">
@@ -58,9 +56,9 @@ export default function Home() {
 
             <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
               {[
-                { icon: <ShieldCheck size={17} />, t: 'ID-verified pros' },
-                { icon: <Star size={17} />, t: '4.8★ from 12k reviews' },
-                { icon: <Clock size={17} />, t: 'Avg arrival 45 mins' },
+                { icon: <ShieldCheck size={17} />, t: 'Artisan profiles' },
+                { icon: <Star size={17} />, t: 'Ratings and reviews' },
+                { icon: <PhoneCall size={17} />, t: 'Contact them directly' },
               ].map((b, i) => (
                 <span key={i} className="inline-flex items-center gap-2 text-sm font-bold text-white/85">
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-[#e8a90c]/20 text-[#fcd116]">{b.icon}</span>{b.t}
@@ -77,10 +75,10 @@ export default function Home() {
       <section className="bg-[#fff8ec]">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-8 sm:px-6 lg:grid-cols-4">
           {[
-            { n: '38,400+', l: 'Jobs completed' },
-            { n: '2,400+', l: 'Verified artisans' },
+            { n: artisans.length, l: 'Artisan profiles' },
+            { n: services.length, l: 'Trades listed' },
             { n: '4.8 / 5', l: 'Average rating' },
-            { n: '45 mins', l: 'Avg. response time' },
+            { n: 'Call · WhatsApp · SMS', l: 'Direct contact options' },
           ].map(s => (
             <div key={s.l} className="rounded-2xl border border-black/10 bg-white px-5 py-4 text-center">
               <p className="font-display tick text-2xl font-black text-[#0b3d2e] sm:text-3xl">{s.n}</p>
@@ -93,7 +91,7 @@ export default function Home() {
       {/* SERVICES */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <SectionHead kicker="12 trades · upfront GH₵ prices" title="What needs fixing today?" sub="Pick a trade to see fixed price list, verified pros and same-day slots." />
+          <SectionHead kicker={`${services.length} trades · local profiles`} title="What kind of help do you need?" sub="Explore the services artisans offer and find someone in your area." />
           <Link to="/services" className="inline-flex items-center gap-1.5 rounded-full border border-black/15 px-5 py-2.5 text-sm font-extrabold text-[#0b3d2e] hover:bg-[#0b3d2e] hover:text-white">All services <ArrowRight size={15} /></Link>
         </div>
         <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -107,8 +105,7 @@ export default function Home() {
               </span>
               <p className="font-display mt-3 text-lg font-black text-[#062a1f]">{s.name}</p>
               <p className="text-xs font-semibold text-black/50">{s.tagline}</p>
-              <p className="tick mt-2 text-sm font-extrabold text-[#147a5b]">from {fmtCedi(s.baseFrom)}</p>
-              <span className="mt-1 inline-flex items-center gap-1 text-xs font-extrabold text-[#b97f06]">See prices <ChevronRight size={13} /></span>
+              <span className="mt-2 inline-flex items-center gap-1 text-xs font-extrabold text-[#b97f06]">Explore service <ChevronRight size={13} /></span>
             </motion.button>
           ))}
         </div>
@@ -120,9 +117,9 @@ export default function Home() {
           <SectionHead light kicker="Simple as 1 · 2 · 3" title="From wahala to fixed, in 3 steps" />
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {[
-              { n: '01', t: 'Describe & pick a price', d: 'Choose your trade, tick the tasks you need and see the total in cedis — before anyone knocks.', icon: <Search size={22} /> },
-              { n: '02', t: 'We match a verified pro', d: 'Nearest available artisan accepts instantly. See their photo, rating, ID badge and live ETA.', icon: <BadgeCheck size={22} /> },
-              { n: '03', t: 'Track, pay & rate', d: 'Follow the job live, pay with MTN / Telecel / AT MoMo, and rate. 7-day fix-it guarantee.', icon: <ShieldCheck size={22} /> },
+              { n: '01', t: 'Choose a trade', d: 'Browse the services offered and narrow the artisan list by city or specialty.', icon: <Search size={22} /> },
+              { n: '02', t: 'Compare profiles', d: 'Review each artisan’s experience, service areas, availability, and customer reviews.', icon: <BadgeCheck size={22} /> },
+              { n: '03', t: 'Contact directly', d: 'Call, WhatsApp, or SMS the artisan to discuss the job, price, and timing.', icon: <PhoneCall size={22} /> },
             ].map((s, i) => (
               <motion.div key={s.n} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="relative overflow-hidden rounded-3xl bg-white/[0.07] p-6 backdrop-blur border border-white/10">
@@ -134,7 +131,7 @@ export default function Home() {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/book" className="rounded-full bg-[#e8a90c] px-7 py-3.5 text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116]">Book a job now</Link>
+            <Link to="/artisans" className="rounded-full bg-[#e8a90c] px-7 py-3.5 text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116]">Find an artisan</Link>
             <Link to="/how-it-works" className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-bold text-white hover:bg-white/10">Learn more</Link>
           </div>
         </div>
@@ -158,13 +155,13 @@ export default function Home() {
           <div className="absolute -bottom-20 right-40 h-52 w-52 rounded-full bg-black/15" />
           <div className="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div className="max-w-xl">
-              <p className="inline-flex items-center gap-2 rounded-full bg-black/25 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest"><Siren size={14} /> 24/7 Emergency line</p>
-              <h3 className="font-display mt-3 text-3xl font-black sm:text-4xl">Burst pipe? Total blackout? Car dead on the motorway?</h3>
-              <p className="mt-2 text-white/80">Emergency jobs jump the queue — a verified pro is dispatched in under 20 minutes, anywhere in Accra & Kumasi.</p>
+              <p className="inline-flex items-center gap-2 rounded-full bg-black/25 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest"><PhoneCall size={14} /> Need urgent help?</p>
+              <h3 className="font-display mt-3 text-3xl font-black sm:text-4xl">Find an artisan and call them directly.</h3>
+              <p className="mt-2 text-white/80">Check profiles for location and availability, then speak with the artisan about the quickest arrangement.</p>
             </div>
             <div className="flex flex-col gap-2.5 sm:flex-row lg:flex-col">
-              <Link to="/book?emergency=1" className="rounded-full bg-white px-7 py-3.5 text-center text-sm font-extrabold text-[#ce1126] hover:bg-[#fdf0c9]">Request emergency help</Link>
-              <a href="tel:0302740000" className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/50 px-7 py-3 text-sm font-extrabold hover:bg-white/10"><Wrench size={15} /> Call 030 274 0000</a>
+              <Link to="/artisans" className="rounded-full bg-white px-7 py-3.5 text-center text-sm font-extrabold text-[#ce1126] hover:bg-[#fdf0c9]">Find artisans</Link>
+              <a href="tel:+233302740000" className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/50 px-7 py-3 text-sm font-extrabold hover:bg-white/10"><PhoneCall size={15} /> Call directory support</a>
             </div>
           </div>
         </div>

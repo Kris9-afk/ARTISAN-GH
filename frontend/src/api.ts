@@ -1,35 +1,51 @@
 import type { Artisan, Review, Service } from './data/market';
-import type { Booking, ChatMsg } from './store';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
+export interface MarketplaceReport {
+  id: string;
+  reporterType: 'customer' | 'artisan';
+  reporterName: string;
+  reporterPhone: string;
+  subjectType: 'customer' | 'artisan';
+  subjectName: string;
+  artisanId?: string;
+  description: string;
+  status: 'open' | 'resolved' | 'dismissed';
+  createdAt: string;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers = new Headers(options?.headers);
+  headers.set('Content-Type', 'application/json');
+  const token = sessionStorage.getItem('agh-admin-token');
+  if (token) headers.set('Authorization', `Bearer ${token}`);
   const response = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers,
   });
   if (!response.ok) throw new Error(`API request failed: ${response.status}`);
   return response.json() as Promise<T>;
 }
 
 export const api = {
-  loginAdmin: (code: string) => request<{ authenticated: boolean }>('/admin/login', { method: 'POST', body: JSON.stringify({ code }) }),
+  loginAdmin: (code: string) => request<{ authenticated: boolean; token: string }>('/admin/login', { method: 'POST', body: JSON.stringify({ code }) }),
   changeAdminCode: (currentCode: string, newCode: string) =>
     request<{ changed: boolean }>('/admin/change-code', { method: 'POST', body: JSON.stringify({ currentCode, newCode }) }),
-  getBookings: () => request<Booking[]>('/bookings'),
   getArtisans: () => request<Artisan[]>('/artisans'),
+  getAdminArtisans: () => request<Artisan[]>('/admin/artisans'),
   getServices: () => request<Service[]>('/services'),
   getReviews: () => request<Review[]>('/reviews'),
   createReview: (review: Review) => request<Review>('/reviews', { method: 'POST', body: JSON.stringify(review) }),
+  createReport: (report: Omit<MarketplaceReport, 'id' | 'status' | 'createdAt'>) =>
+    request<MarketplaceReport>('/reports', { method: 'POST', body: JSON.stringify(report) }),
+  getReports: () => request<MarketplaceReport[]>('/admin/reports'),
+  updateReport: (id: string, status: MarketplaceReport['status']) =>
+    request<MarketplaceReport>(`/admin/reports/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   getTestimonials: () => request<{ name: string; area: string; text: string; role: string }[]>('/testimonials'),
   getCities: () => request<string[]>('/cities'),
   createArtisan: (artisan: Artisan) => request<Artisan>('/artisans', { method: 'POST', body: JSON.stringify(artisan) }),
-  deleteArtisan: (id: string) => request<{ deleted: boolean }>(`/artisans/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-  createBooking: (booking: Booking) => request<Booking>('/bookings', { method: 'POST', body: JSON.stringify(booking) }),
-  updateBooking: (id: string, update: Partial<Booking>) =>
-    request<Booking>(`/bookings/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(update) }),
-  addMessage: (id: string, message: ChatMsg) =>
-    request<ChatMsg>(`/bookings/${encodeURIComponent(id)}/messages`, { method: 'POST', body: JSON.stringify(message) }),
-  getMessages: (id: string) => request<ChatMsg[]>(`/bookings/${encodeURIComponent(id)}/messages`),
+  updateArtisan: (id: string, update: Partial<Artisan>) =>
+    request<Artisan>(`/admin/artisans/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(update) }),
 };
 

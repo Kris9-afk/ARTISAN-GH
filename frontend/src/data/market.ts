@@ -14,10 +14,26 @@ export interface Artisan {
   city: string; areas: string[]; rating: number; reviewsCount: number;
   jobsDone: number; yearsExp: number; priceFrom: number;
   verified: boolean; availableNow: boolean; topRated?: boolean;
+  suspended?: boolean;
   languages: string[]; phone: string; bio: string; skills: string[];
   color: string; initials: string; image?: string; responseMins: number;
 }
 export interface Review { id: string; artisanId: string; name: string; city: string; rating: number; text: string; date: string }
+
+export const contactNumber = (phone: string) => {
+  const digits = phone.replace(/\D/g, '');
+  return digits.startsWith('0') ? `233${digits.slice(1)}` : digits;
+};
+
+export const artisanContactLinks = (phone: string) => {
+  const number = contactNumber(phone);
+  const message = encodeURIComponent('Hello, I found your profile on ARTISAN-GH. Are you available to discuss a job?');
+  return {
+    call: `tel:+${number}`,
+    whatsapp: `https://wa.me/${number}?text=${message}`,
+    sms: `sms:+${number}?body=${message}`,
+  };
+};
 
 export const CITIES = ['Accra','Kumasi','Takoradi','Tamale','Cape Coast','Sunyani','Koforidua','Tema'];
 
@@ -115,7 +131,7 @@ export const SERVICES: Service[] = [
 
 export const ARTISANS: Artisan[] = [
   { id: 'kwame-plumb', name: 'Kwame Mensah', trade: 'plumbing', tradeLabel: 'Master Plumber', city: 'Accra', areas: ['East Legon','Osu','Spintex','Adenta'], rating: 4.9, reviewsCount: 214, jobsDone: 640, yearsExp: 11, priceFrom: 80, verified: true, availableNow: true, topRated: true, languages: ['English','Twi','Ga'], phone: '024 412 8890', bio: 'Certified plumber with 11 years across estates in Accra. Polytank, pump automation and bathroom fittings are my speciality. I come with my own tools and leave your place clean.', skills: ['Polytank setup','Water heaters','Bathroom fittings','Leak detection'], color: '#0b3d2e', initials: 'KM', image: '/images/plumber.jpg', responseMins: 8 },
-  { id: 'ama-elec', name: 'Ama Owusu', trade: 'electrical', tradeLabel: 'Licensed Electrician', city: 'Kumasi', areas: ['Asokwa','Ahodwo','Kwadaso','Ejisu'], rating: 4.9, reviewsCount: 187, jobsDone: 520, yearsExp: 9, priceFrom: 70, verified: true, availableNow: true, topRated: true, languages: ['English','Twi'], phone: '055 238 1145', bio: 'Energy Commission certified electrician. House wiring, fault tracing and smart fittings. Safety first — every job tested and guaranteed for 6 months.', skills: ['House wiring','Fault tracing','Smart switches','DB boards'], color: '#b97f06', initials: 'AO', image: '/images/electrician.jpg', responseMins: 12 },
+  { id: 'ama-elec', name: 'Ama Owusu', trade: 'electrical', tradeLabel: 'Licensed Electrician', city: 'Kumasi', areas: ['Asokwa','Ahodwo','Kwadaso','Ejisu'], rating: 4.9, reviewsCount: 187, jobsDone: 520, yearsExp: 9, priceFrom: 70, verified: true, availableNow: true, topRated: true, languages: ['English','Twi'], phone: '055 238 1145', bio: 'Energy Commission certified electrician. House wiring, fault tracing and smart fittings. Safety first — I test my work before I leave.', skills: ['House wiring','Fault tracing','Smart switches','DB boards'], color: '#b97f06', initials: 'AO', image: '/images/electrician.jpg', responseMins: 12 },
   { id: 'yaw-auto', name: 'Yaw Asante', trade: 'auto', tradeLabel: 'Auto Mechanic', city: 'Accra', areas: ['Suame','Circle','Achimota','Tema'], rating: 4.8, reviewsCount: 342, jobsDone: 980, yearsExp: 14, priceFrom: 100, verified: true, availableNow: true, topRated: true, languages: ['English','Twi','Hausa'], phone: '020 815 6632', bio: '14 years on Toyota, Honda, Kia & Benz. Computerised diagnostics at your home or office, plus 24/7 roadside rescue inside Accra.', skills: ['Diagnostics','Brake systems','Full service','Roadside rescue'], color: '#ce1126', initials: 'YA', image: '/images/mechanic.jpg', responseMins: 15 },
   { id: 'efua-clean', name: 'Efua Adu', trade: 'cleaning', tradeLabel: 'Cleaning Lead', city: 'Accra', areas: ['Cantonments','Airport','Labone','Dzorwulu'], rating: 5.0, reviewsCount: 268, jobsDone: 720, yearsExp: 7, priceFrom: 150, verified: true, availableNow: true, topRated: true, languages: ['English','Twi','Ga','Ewe'], phone: '059 774 2091', bio: 'I lead a 6-lady team for deep cleans, move-ins and offices. We bring machines, chemicals and fresh linen scent. Your keys are safe with us.', skills: ['Deep cleaning','Sofa shampoo','Move-in/out','Office contracts'], color: '#147a5b', initials: 'EA', image: '/images/cleaner.jpg', responseMins: 6 },
   { id: 'kofi-carp', name: 'Kofi Boateng', trade: 'carpentry', tradeLabel: 'Carpenter & Joiner', city: 'Kumasi', areas: ['Suame Magazine','Asafo','Mampong'], rating: 4.8, reviewsCount: 156, jobsDone: 410, yearsExp: 12, priceFrom: 120, verified: true, availableNow: false, languages: ['English','Twi'], phone: '054 990 3318', bio: 'Second-generation carpenter from Anloga wood market. Wardrobes, kitchen cabinets and solid doors that last decades.', skills: ['Wardrobes','Kitchen cabinets','Doors','Roofing wood'], color: '#7c4a12', initials: 'KB', image: '/images/craft.jpg', responseMins: 25 },
@@ -144,9 +160,9 @@ export const REVIEWS: Review[] = [
 ];
 
 export const TESTIMONIALS = [
-  { name: 'Naa Dedei Lamptey', area: 'Osu, Accra', text: 'My kitchen sink burst on a Sunday morning. Y3FIX-GH sent a plumber in under an hour — paid with MTN MoMo, got a receipt, done.', role: 'Homeowner' },
-  { name: 'Dr. Kofi Asare', area: 'Ahodwo, Kumasi', text: 'I run a clinic and cannot afford electrical faults. The verified badge is real — the electrician showed her Energy Commission ID on arrival.', role: 'Clinic owner' },
-  { name: 'Mawuena K.', area: 'Ho, Volta', text: 'As a student I feared being overcharged. Upfront prices in cedis saved me — I knew the total before anyone knocked.', role: 'Student' },
+  { name: 'Naa Dedei Lamptey', area: 'Osu, Accra', text: 'I found a nearby plumber through the directory, called to explain the leak, and we agreed on a time that worked for both of us.', role: 'Homeowner' },
+  { name: 'Dr. Kofi Asare', area: 'Ahodwo, Kumasi', text: 'The electrician’s profile showed her experience and service area. I called to ask a few questions before arranging the visit.', role: 'Clinic owner' },
+  { name: 'Mawuena K.', area: 'Ho, Volta', text: 'I could compare profiles and reviews, then contact an artisan directly to discuss the work and price.', role: 'Student' },
 ];
 
 export const fmtCedi = (n: number) => `GH₵${n.toLocaleString('en-GH')}`;

@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, BadgeCheck, Smartphone, ShieldCheck, ChevronDown, Hammer, GraduationCap, Banknote, Users, LifeBuoy, AlertTriangle, FileCheck } from 'lucide-react';
+import { Search, BadgeCheck, PhoneCall, MessageCircle, ShieldCheck, ChevronDown, Hammer, GraduationCap, Users, LifeBuoy, AlertTriangle, FileCheck } from 'lucide-react';
 import { SectionHead } from '../components/ui';
 import { useStore } from '../store';
 
 export function HowItWorks() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <SectionHead kicker="No wahala, just fixed" title="How Y3FIX-GH works" sub="Built for Ghanaian realities: traffic, dumsor, MoMo — and the need for someone you can trust in your home." />
+      <SectionHead kicker="Find the right local help" title="How Y3FIX-GH works" sub="Browse artisan profiles, then speak directly with the person you choose to arrange the work." />
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         {[
-          { t: 'For customers', icon: <Search size={22} />, color: 'bg-[#0b3d2e]', items: ['Search 12 trades with fixed GH₵ price lists — no haggling.', 'Pick a verified pro or let us auto-match the nearest one.', 'Pay securely with MTN MoMo, Telecel Cash or AT Money.', 'Track the job live, chat, then rate. 7-day re-fix guarantee.'] },
-          { t: 'For artisans', icon: <Hammer size={22} />, color: 'bg-[#e8a90c]', items: ['Free to join — Ghana Card + trade proof verification.', 'Get matched jobs near you; accept in one tap.', 'Weekly payouts straight to your MoMo, zero wahala.', 'Build your star rating and unlock higher-value jobs.'] },
-          { t: 'Our safety promise', icon: <ShieldCheck size={22} />, color: 'bg-[#ce1126]', items: ['Every pro is ID-checked and trade-tested in person.', 'Jobs are insured up to GH₵5,000 against damage.', 'Money is held in escrow until you confirm completion.', '24/7 support line: 030 274 0000, plus in-app SOS.'] },
+          { t: 'For customers', icon: <Search size={22} />, color: 'bg-[#0b3d2e]', items: ['Browse profiles by trade, city, and service area.', 'Compare experience, skills, availability, ratings, and reviews.', 'Call, WhatsApp, or SMS an artisan directly.', 'Agree on the job, price, timing, and payment with the artisan.'] },
+          { t: 'For artisans', icon: <Hammer size={22} />, color: 'bg-[#e8a90c]', items: ['Apply to be listed in the directory.', 'Share your trade, service areas, skills, and contact number.', 'Customers can reach you directly from your profile.', 'Build your profile with customer reviews and updated details.'] },
+          { t: 'Use the directory thoughtfully', icon: <ShieldCheck size={22} />, color: 'bg-[#ce1126]', items: ['Read profiles and reviews before choosing.', 'Confirm the scope, final price, timing, and materials directly.', 'Agree payment terms with the artisan before work begins.', 'Report concerns to Y3FIX-GH by form, phone, or WhatsApp.'] },
         ].map((c, i) => (
           <motion.div key={c.t} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}
             className="rounded-[26px] border border-black/10 bg-white p-6">
@@ -26,10 +26,10 @@ export function HowItWorks() {
         ))}
       </div>
       <div className="mt-8 overflow-hidden rounded-[26px] bg-[#062a1f] p-8 text-center text-white">
-        <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e8a90c]">Ready when you are</p>
-        <h3 className="font-display mx-auto mt-2 max-w-xl text-2xl font-black sm:text-3xl">Your trusted handyman is one tap away. Yɛbɛfix am!</h3>
+        <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#e8a90c]">Browse local profiles</p>
+        <h3 className="font-display mx-auto mt-2 max-w-xl text-2xl font-black sm:text-3xl">Choose an artisan and make arrangements directly.</h3>
         <div className="mt-5 flex justify-center gap-2">
-          <Link to="/book" className="rounded-full bg-[#e8a90c] px-7 py-3 text-sm font-extrabold text-[#062a1f]">Book a job</Link>
+          <Link to="/artisans" className="rounded-full bg-[#e8a90c] px-7 py-3 text-sm font-extrabold text-[#062a1f]">Find artisans</Link>
           <Link to="/join" className="rounded-full border border-white/25 px-7 py-3 text-sm font-bold">Join as artisan</Link>
         </div>
       </div>
@@ -57,13 +57,13 @@ export function Join() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <SectionHead kicker="Earn with your hands" title="Join 2,400+ pros earning on Y3FIX-GH" sub="Free onboarding in Accra, Kumasi, Takoradi & Tamale. Keep 90% of every job — paid weekly to your MoMo." />
+          <SectionHead kicker="Make your work easier to find" title="List your artisan profile" sub="Share your trade, service areas, experience, and contact details so local customers can reach you directly." />
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {[
-              { icon: <Banknote size={20} />, t: 'GH₵3,800 avg / month', d: 'Top pros clear more with steady matched jobs.' },
-              { icon: <Users size={20} />, t: 'Free customers', d: 'No flyers, no chasing. Jobs come to your phone.' },
-              { icon: <GraduationCap size={20} />, t: 'Free upskilling', d: 'Monthly NVTI-aligned training & certification.' },
-              { icon: <Smartphone size={20} />, t: 'Weekly MoMo payouts', d: 'Every Friday, no stories, full statement.' },
+              { icon: <Users size={20} />, t: 'A public profile', d: 'Show customers your trade, service area, and skills.' },
+              { icon: <PhoneCall size={20} />, t: 'Direct enquiries', d: 'Customers call or message you to discuss a job.' },
+              { icon: <GraduationCap size={20} />, t: 'Show your experience', d: 'Add your background, languages, and relevant qualifications.' },
+              { icon: <MessageCircle size={20} />, t: 'Build trust', d: 'Share your profile and collect customer reviews.' },
             ].map(b => (
               <div key={b.t} className="rounded-2xl border border-black/10 bg-white p-4">
                 <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#0b3d2e] text-[#fcd116]">{b.icon}</span>
@@ -161,19 +161,19 @@ export function Join() {
 }
 
 const FAQS = [
-  { q: 'How fast can an artisan reach me?', a: 'In Accra and Kumasi, average arrival is 45 minutes for standard jobs and under 20 minutes for emergencies. You see a live ETA once a pro accepts.' },
-  { q: 'How do payments work?', a: 'You approve an MTN MoMo, Telecel Cash or AT Money prompt at booking. Funds are held in escrow and released to the artisan only after you confirm the job is done. Full receipts by SMS.' },
-  { q: 'What if the repair fails within days?', a: 'Every job carries a 7-day re-fix guarantee. Report it in My Jobs or call 030 274 0000 and we send the artisan back free — or a replacement pro.' },
-  { q: 'Are artisans really verified?', a: 'Yes. Ghana Card, proof of address, trade certificate or practical trade test, plus a guarantor. Look for the green Verified badge on every profile.' },
-  { q: 'Do prices include materials / parts?', a: 'Listed prices are labour. If parts are needed, the artisan shows you shop receipts and you approve before purchase — or supply parts yourself.' },
-  { q: 'Which areas do you serve?', a: 'Accra, Tema & Kasoa, Kumasi, Takoradi, Tamale, Cape Coast, Ho, Sunyani and Koforidua — expanding monthly. Emergency dispatch currently covers Accra & Kumasi.' },
+  { q: 'How do I arrange a job?', a: 'Open an artisan profile and call, WhatsApp, or SMS them. Discuss the work, price, timing, materials, and payment directly.' },
+  { q: 'How are prices and payments handled?', a: 'Y3FIX-GH does not set or collect payment for a job. Confirm the price and payment method directly with the artisan before work begins.' },
+  { q: 'What if I have a concern about an artisan or customer?', a: 'Send a report through our report form, call 030 274 0000, or WhatsApp 059 000 0000. Our team reviews directory concerns.' },
+  { q: 'What does the Verified badge mean?', a: 'The badge identifies profiles marked as verified by Y3FIX-GH. Review the profile details and discuss any questions directly with the artisan.' },
+  { q: 'How do I choose an artisan?', a: 'Compare the trade, service areas, skills, experience, availability, ratings, and reviews shown on each profile.' },
+  { q: 'Which areas do you serve?', a: 'Use the city and service-area details on artisan profiles to find people listed near you.' },
 ];
 
 export function Support() {
   const [open, setOpen] = useState(0);
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <SectionHead kicker="Help & safety" title="Questions? Yɛwɔ ha ma wo." sub="Call 030 274 0000 (Mon–Sat, 7am–8pm) or tap answers below." />
+      <SectionHead kicker="Help & safety" title="Questions? Yɛwɔ ha ma wo." sub="Call 030 274 0000 or WhatsApp 059 000 0000, or read the answers below." />
       <div className="mt-7 space-y-2.5">
         {FAQS.map((f, i) => (
           <div key={f.q} className={`overflow-hidden rounded-2xl border bg-white transition ${open === i ? 'border-[#e8a90c]' : 'border-black/10'}`}>
@@ -186,14 +186,14 @@ export function Support() {
       </div>
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {[
-          { icon: <AlertTriangle size={18} />, t: 'Emergency', d: 'Call 030 274 0000', href: 'tel:0302740000' },
-          { icon: <FileCheck size={18} />, t: 'Report an issue', d: 'Guarantee claims', href: '/jobs' },
-          { icon: <LifeBuoy size={18} />, t: 'WhatsApp us', d: 'Chat 059 000 0000', href: '/jobs' },
+          { icon: <AlertTriangle size={18} />, t: 'Call support', d: '030 274 0000', href: 'tel:+233302740000', external: true },
+          { icon: <FileCheck size={18} />, t: 'Report a concern', d: 'Send a report for review', href: '/report' },
+          { icon: <LifeBuoy size={18} />, t: 'WhatsApp support', d: 'Chat 059 000 0000', href: 'https://wa.me/233590000000', external: true },
         ].map(c => (
-          <Link key={c.t} to={c.href} className="flex items-center gap-3 rounded-2xl bg-[#062a1f] p-4 text-white hover:bg-[#0b3d2e]">
+          <a key={c.t} href={c.href} {...(c.external ? { target: '_blank', rel: 'noreferrer' } : {})} className="flex items-center gap-3 rounded-2xl bg-[#062a1f] p-4 text-white hover:bg-[#0b3d2e]">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#e8a90c] text-[#062a1f]">{c.icon}</span>
             <span><span className="block text-sm font-extrabold">{c.t}</span><span className="block text-xs text-white/60">{c.d}</span></span>
-          </Link>
+          </a>
         ))}
       </div>
     </div>

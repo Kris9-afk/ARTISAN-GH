@@ -40,7 +40,7 @@ export default function Artisans() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <SectionHead kicker="Verified Ghanaian pros" title="Find your artisan" sub="Search by trade, task or name. Every profile shows real ratings, ID badge and live availability." />
+      <SectionHead kicker="Local artisan profiles" title="Find your artisan" sub="Search by trade, task, city, or name. Compare skills, experience, ratings, and availability." />
 
       <div className="sticky top-[76px] z-30 mt-6 rounded-3xl border border-black/10 bg-white/95 p-3 shadow-lg backdrop-blur">
         <div className="flex flex-col gap-2 lg:flex-row">
@@ -93,8 +93,8 @@ export default function Artisans() {
       {list.length === 0 ? (
         <div className="mt-10 rounded-3xl border border-dashed border-black/20 bg-white p-10 text-center">
           <p className="font-display text-2xl font-black text-[#062a1f]">No pros match — yet!</p>
-          <p className="mx-auto mt-2 max-w-md text-sm text-black/55">Try a different spelling or city, or book directly and we will manually match you within 30 minutes.</p>
-          <Link to="/book" className="mt-4 inline-block rounded-full bg-[#e8a90c] px-6 py-3 text-sm font-extrabold text-[#062a1f]">Request manual matching</Link>
+          <p className="mx-auto mt-2 max-w-md text-sm text-black/55">Try another trade or city, or browse the service list to explore other kinds of local work.</p>
+          <Link to="/services" className="mt-4 inline-block rounded-full bg-[#0b3d2e] px-6 py-3 text-sm font-extrabold text-white">Browse services</Link>
         </div>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

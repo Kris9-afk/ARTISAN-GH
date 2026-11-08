@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { BadgeCheck, MapPin, Phone, MessageCircle, Languages, Award, Briefcase, ChevronLeft, ShieldCheck, Clock } from 'lucide-react';
-import { fmtCedi } from '../data/market';
+import { BadgeCheck, MapPin, Phone, MessageCircle, MessageSquare, Languages, Award, ChevronLeft } from 'lucide-react';
+import { artisanContactLinks } from '../data/market';
 import { Stars, ArtisanCard } from '../components/ui';
 import { useStore } from '../store';
 
@@ -15,6 +15,7 @@ export default function ArtisanDetail() {
   const revs = reviews.filter(r => r.artisanId === a.id);
   if (!svc) return null;
   const similar = artisans.filter(x => x.trade === a.trade && x.id !== a.id).slice(0, 3);
+  const contact = artisanContactLinks(a.phone);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -42,12 +43,12 @@ export default function ArtisanDetail() {
                 </div>
                 <div className="rounded-2xl bg-white px-4 py-2.5 text-center">
                   <p className="flex items-center gap-1.5 text-lg font-extrabold text-[#062a1f]"><Stars value={a.rating} /> {a.rating.toFixed(1)}</p>
-                  <p className="text-[11px] font-bold text-black/50">{a.reviewsCount} reviews · {a.jobsDone} jobs</p>
+                  <p className="text-[11px] font-bold text-black/50">{a.reviewsCount} reviews</p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 divide-x divide-black/10 border-b border-black/10 bg-[#fff8ec]/70 text-center">
+            <div className="grid grid-cols-2 divide-x divide-black/10 border-b border-black/10 bg-[#fff8ec]/70 text-center">
               {[
                 { v: `${a.yearsExp} yrs`, l: 'Experience' },
                 { v: `~${a.responseMins}m`, l: 'Responds in' },
@@ -67,18 +68,7 @@ export default function ArtisanDetail() {
               </div>
               <div className="mt-5 grid gap-3 rounded-2xl bg-[#f5ead2]/60 p-4 text-sm font-semibold text-black/65 sm:grid-cols-3">
                 <span className="inline-flex items-center gap-2"><Languages size={16} className="text-[#147a5b]" /> {a.languages.join(', ')}</span>
-                <span className="inline-flex items-center gap-2"><Award size={16} className="text-[#147a5b]" /> Trade certified</span>
-                <span className="inline-flex items-center gap-2"><Briefcase size={16} className="text-[#147a5b]" /> Insured jobs</span>
-              </div>
-
-              <h2 className="font-display mt-7 text-xl font-black text-[#062a1f]">Price list</h2>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {svc.tasks.map(t => (
-                  <div key={t.id} className="flex items-center justify-between rounded-2xl border border-black/10 px-4 py-3">
-                    <span className="text-sm font-bold text-[#062a1f]">{t.label}</span>
-                    <span className="tick text-sm font-extrabold text-[#147a5b]">{fmtCedi(t.price)}</span>
-                  </div>
-                ))}
+                <span className="inline-flex items-center gap-2"><Award size={16} className="text-[#147a5b]" /> Trade experience</span>
               </div>
 
               <h2 className="font-display mt-7 text-xl font-black text-[#062a1f]">Reviews ({revs.length || a.reviewsCount})</h2>
@@ -90,7 +80,7 @@ export default function ArtisanDetail() {
                       <Stars value={r.rating} size={12} />
                     </div>
                     <p className="mt-1.5 text-sm leading-relaxed text-black/65">“{r.text}”</p>
-                    <p className="mt-1 text-[11px] font-bold text-black/35">{r.date} · Verified job</p>
+                    <p className="mt-1 text-[11px] font-bold text-black/35">{r.date}</p>
                   </div>
                 ))}
               </div>
@@ -117,21 +107,17 @@ export default function ArtisanDetail() {
           )}
         </div>
 
-        {/* sticky booking panel */}
+        {/* direct contact panel */}
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="overflow-hidden rounded-[28px] bg-[#062a1f] p-6 text-white shadow-2xl">
-            <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#e8a90c]">Book {a.name.split(' ')[0]}</p>
-            <p className="tick font-display mt-1 text-3xl font-black">—</p>
-            <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-white/60"><Clock size={12} /> Free cancellation 2hrs before</p>
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#e8a90c]">Contact {a.name.split(' ')[0]}</p>
+            <p className="mt-2 text-sm leading-relaxed text-white/70">Call or message {a.name.split(' ')[0]} to discuss the work, price, and timing directly.</p>
             <div className="mt-4 space-y-2.5">
-              <Link to={`/book?artisan=${a.id}`} className="block rounded-2xl bg-[#e8a90c] py-3.5 text-center text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116]">Book this artisan</Link>
-              <a href={`tel:${a.phone.replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 rounded-2xl border border-white/25 py-3.5 text-sm font-bold hover:bg-white/10"><Phone size={15} /> {a.phone}</a>
-              <Link to={`/book?artisan=${a.id}`} className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 py-3.5 text-sm font-bold hover:bg-white/15"><MessageCircle size={15} /> Chat before booking</Link>
+              <a href={contact.call} className="flex items-center justify-center gap-2 rounded-2xl bg-[#e8a90c] py-3.5 text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116]"><Phone size={15} /> Call {a.phone}</a>
+              <a href={contact.whatsapp} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-2xl border border-white/25 py-3.5 text-sm font-bold hover:bg-white/10"><MessageCircle size={15} /> WhatsApp</a>
+              <a href={contact.sms} className="flex items-center justify-center gap-2 rounded-2xl bg-white/10 py-3.5 text-sm font-bold hover:bg-white/15"><MessageSquare size={15} /> Send SMS</a>
             </div>
-            <div className="mt-5 rounded-2xl bg-white/[0.07] p-4 text-xs leading-relaxed text-white/65">
-              <p className="flex items-center gap-1.5 font-extrabold text-[#fcd116]"><ShieldCheck size={14} /> Y3FIX-GH Guarantee</p>
-              <p className="mt-1">ID-checked pro · Upfront price locked · 7-day free re-fix if anything goes wrong.</p>
-            </div>
+            <Link to={`/report?artisan=${a.id}`} className="mt-4 inline-block text-xs font-bold text-white/55 underline underline-offset-2 hover:text-white">Report a concern about this profile</Link>
           </div>
         </aside>
       </div>

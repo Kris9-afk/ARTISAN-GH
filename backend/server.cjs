@@ -13,6 +13,8 @@ const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
 if (!MONGO_CONNECTION_STRING) throw new Error('MONGO_CONNECTION_STRING is required');
 
 const mongo = new MongoClient(MONGO_CONNECTION_STRING);
+const adminSessions = new Map();
+const ADMIN_SESSION_TTL = 8 * 60 * 60 * 1000;
 let db;
 let collections;
 
@@ -29,15 +31,19 @@ const schemas = {
       languages: { bsonType: 'array', items: { bsonType: 'string' } }, bio: { bsonType: 'string' },
       skills: { bsonType: 'array', items: { bsonType: 'string' } }, color: { bsonType: 'string' },
       initials: { bsonType: 'string' }, responseMins: { bsonType: 'number' }, image: { bsonType: 'string' },
+      suspended: { bsonType: 'bool' },
     },
   },
-  bookings: {
-    bsonType: 'object', required: ['id', 'name', 'phone', 'total', 'createdAt'],
-    properties: { id: { bsonType: 'string' }, name: { bsonType: 'string' }, phone: { bsonType: 'string' }, total: {}, createdAt: { bsonType: 'string' }, status: { bsonType: 'string' } },
-  },
-  messages: {
-    bsonType: 'object', required: ['bookingId', 'text', 'from', 'at'],
-    properties: { bookingId: { bsonType: 'string' }, text: { bsonType: 'string' }, from: { bsonType: 'string' }, at: { bsonType: 'string' } },
+  reports: {
+    bsonType: 'object',
+    required: ['id', 'reporterType', 'reporterName', 'reporterPhone', 'subjectType', 'subjectName', 'description', 'status', 'createdAt'],
+    properties: {
+      id: { bsonType: 'string' }, reporterType: { enum: ['customer', 'artisan'] },
+      reporterName: { bsonType: 'string' }, reporterPhone: { bsonType: 'string' },
+      subjectType: { enum: ['customer', 'artisan'] }, subjectName: { bsonType: 'string' },
+      artisanId: { bsonType: 'string' }, description: { bsonType: 'string' },
+      status: { enum: ['open', 'resolved', 'dismissed'] }, createdAt: { bsonType: 'string' },
+    },
   },
   settings: {
     bsonType: 'object', required: ['key', 'salt', 'hash'],
@@ -73,13 +79,11 @@ async function setupDatabase() {
     }
   }
   collections = {
-    artisans: db.collection('artisans'), bookings: db.collection('bookings'),
-    messages: db.collection('messages'), settings: db.collection('settings'),
+    artisans: db.collection('artisans'), reports: db.collection('reports'), settings: db.collection('settings'),
     services: db.collection('services'), reviews: db.collection('reviews'), testimonials: db.collection('testimonials'),
   };
   await collections.artisans.createIndex({ id: 1 }, { unique: true });
-  await collections.bookings.createIndex({ id: 1 }, { unique: true });
-  await collections.messages.createIndex({ bookingId: 1, at: 1 });
+  await collections.reports.createIndex({ id: 1 }, { unique: true });
   await collections.settings.createIndex({ key: 1 }, { unique: true });
   await collections.services.createIndex({ id: 1 }, { unique: true });
   await collections.reviews.createIndex({ artisanId: 1, date: -1 });
@@ -105,11 +109,6 @@ async function migrateJsonData() {
   try {
     const legacy = JSON.parse(await fs.readFile(path.join(__dirname, 'data.json'), 'utf8'));
     if (legacy.artisans?.length && await collections.artisans.countDocuments() === 0) await collections.artisans.insertMany(legacy.artisans);
-    if (legacy.bookings?.length && await collections.bookings.countDocuments() === 0) await collections.bookings.insertMany(legacy.bookings);
-    if (legacy.chats && await collections.messages.countDocuments() === 0) {
-      const messages = Object.entries(legacy.chats).flatMap(([bookingId, items]) => items.map(message => ({ ...message, bookingId })));
-      if (messages.length) await collections.messages.insertMany(messages);
-    }
     const source = await fs.readFile(path.join(__dirname, '..', 'frontend', 'src', 'data', 'market.ts'), 'utf8');
     const seed = (name, collection, pattern) => {
       if (!pattern.test(source)) throw new Error(`Could not find frontend ${name} seed data`);
@@ -170,12 +169,29 @@ async function adminCodeMatches(code) {
   return match;
 }
 
+function createAdminSession() {
+  const token = crypto.randomBytes(32).toString('hex');
+  adminSessions.set(token, Date.now() + ADMIN_SESSION_TTL);
+  return token;
+}
+
+function hasAdminSession(req) {
+  const token = req.headers.authorization?.match(/^Bearer (.+)$/i)?.[1];
+  if (!token) return false;
+  const expiresAt = adminSessions.get(token);
+  if (!expiresAt || expiresAt <= Date.now()) {
+    adminSessions.delete(token);
+    return false;
+  }
+  return true;
+}
+
 function send(res, status, body) {
   res.writeHead(status, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': process.env.FRONTEND_ORIGIN || '*',
     'Access-Control-Allow-Methods': allowedMethods.join(', '),
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   });
   res.end(JSON.stringify(body));
 }
@@ -212,9 +228,10 @@ async function handle(req, res) {
     if (!lookupCode || !(await adminCodeMatches(lookupCode))) {
       return send(res, 401, { error: 'Invalid admin access code' });
     }
-    return send(res, 200, { authenticated: true });
+    return send(res, 200, { authenticated: true, token: createAdminSession() });
   }
   if (parts.length === 2 && parts[0] === 'admin' && parts[1] === 'change-code' && req.method === 'POST') {
+    if (!hasAdminSession(req)) return send(res, 401, { error: 'Admin authorization required' });
     const credentials = await body(req);
     const currentCode = typeof credentials.currentCode === 'string' ? credentials.currentCode.trim().toLowerCase() : '';
     const nextCode = typeof credentials.newCode === 'string' ? credentials.newCode.trim().toLowerCase() : '';
@@ -227,11 +244,12 @@ async function handle(req, res) {
     await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(nextCode) });
     return send(res, 200, { changed: true });
   }
-  if (parts.length === 1 && parts[0] === 'bookings' && req.method === 'GET') {
-    return send(res, 200, await collections.bookings.find({}, { projection: { _id: 0 } }).toArray());
+  if (parts.length === 2 && parts[0] === 'admin' && parts[1] === 'artisans' && req.method === 'GET') {
+    if (!hasAdminSession(req)) return send(res, 401, { error: 'Admin authorization required' });
+    return send(res, 200, await collections.artisans.find({}, { projection: { _id: 0 } }).sort({ name: 1 }).toArray());
   }
   if (parts.length === 1 && parts[0] === 'artisans' && req.method === 'GET') {
-    return send(res, 200, await collections.artisans.find({}, { projection: { _id: 0 } }).toArray());
+    return send(res, 200, await collections.artisans.find({ suspended: { $ne: true } }, { projection: { _id: 0 } }).toArray());
   }
   if (parts.length === 1 && parts[0] === 'services' && req.method === 'GET') {
     return send(res, 200, await collections.services.find({}, { projection: { _id: 0 } }).sort({ name: 1 }).toArray());
@@ -248,6 +266,45 @@ async function handle(req, res) {
     await collections.reviews.insertOne(saved);
     return send(res, 201, saved);
   }
+  if (parts.length === 1 && parts[0] === 'reports' && req.method === 'POST') {
+    const report = await body(req);
+    if (!['customer', 'artisan'].includes(report.reporterType) || !['customer', 'artisan'].includes(report.subjectType)
+      || !String(report.reporterName || '').trim() || !String(report.reporterPhone || '').trim()
+      || !String(report.subjectName || '').trim() || String(report.description || '').trim().length < 15) {
+      return send(res, 422, { error: 'Reporter, subject, contact, and a description of at least 15 characters are required' });
+    }
+    const artisan = report.subjectType === 'artisan' ? await collections.artisans.findOne({ id: report.artisanId, suspended: { $ne: true } }) : null;
+    if (report.subjectType === 'artisan' && !artisan) return send(res, 422, { error: 'Choose an active artisan profile' });
+    const saved = {
+      id: `report-${crypto.randomUUID()}`,
+      reporterType: report.reporterType,
+      reporterName: String(report.reporterName).trim().slice(0, 100),
+      reporterPhone: String(report.reporterPhone).trim().slice(0, 40),
+      subjectType: report.subjectType,
+      subjectName: report.subjectType === 'artisan' ? artisan.name : String(report.subjectName).trim().slice(0, 100),
+      ...(report.subjectType === 'artisan' ? { artisanId: artisan.id } : {}),
+      description: String(report.description).trim().slice(0, 2000),
+      status: 'open',
+      createdAt: new Date().toISOString(),
+    };
+    await collections.reports.insertOne(saved);
+    return send(res, 201, saved);
+  }
+  if (parts.length === 2 && parts[0] === 'admin' && parts[1] === 'reports' && req.method === 'GET') {
+    if (!hasAdminSession(req)) return send(res, 401, { error: 'Admin authorization required' });
+    return send(res, 200, await collections.reports.find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).toArray());
+  }
+  if (parts.length === 3 && parts[0] === 'admin' && parts[1] === 'reports' && req.method === 'PATCH') {
+    if (!hasAdminSession(req)) return send(res, 401, { error: 'Admin authorization required' });
+    const update = await body(req);
+    if (!['open', 'resolved', 'dismissed'].includes(update.status)) return send(res, 422, { error: 'Invalid report status' });
+    const result = await collections.reports.findOneAndUpdate(
+      { id: parts[2] }, { $set: { status: update.status, reviewedAt: new Date().toISOString() } },
+      { returnDocument: 'after', projection: { _id: 0 } },
+    );
+    if (!result) return send(res, 404, { error: 'Report not found' });
+    return send(res, 200, result);
+  }
   if (parts.length === 1 && parts[0] === 'testimonials' && req.method === 'GET') {
     return send(res, 200, await collections.testimonials.find({}, { projection: { _id: 0 } }).toArray());
   }
@@ -256,47 +313,25 @@ async function handle(req, res) {
     return send(res, 200, cities.sort());
   }
   if (parts.length === 1 && parts[0] === 'artisans' && req.method === 'POST') {
+    if (!hasAdminSession(req)) return send(res, 401, { error: 'Admin authorization required' });
     const artisan = await body(req);
     if (!artisan.id || !artisan.name || !artisan.trade || !artisan.phone) {
       return send(res, 422, { error: 'id, name, trade and phone are required' });
     }
-    const saved = { ...artisan, id: artisan.id };
+    const saved = { ...artisan, id: artisan.id, suspended: Boolean(artisan.suspended) };
     await collections.artisans.replaceOne({ id: saved.id }, saved, { upsert: true });
     return send(res, 201, saved);
   }
-  if (parts.length === 2 && parts[0] === 'artisans' && req.method === 'DELETE') {
-    const result = await collections.artisans.deleteOne({ id: parts[1] });
-    if (result.deletedCount === 0) return send(res, 404, { error: 'Artisan not found' });
-    return send(res, 200, { deleted: true });
-  }
-  if (parts.length === 1 && parts[0] === 'bookings' && req.method === 'POST') {
-    const booking = await body(req);
-    if (!booking.name || !booking.phone || !booking.total) {
-      return send(res, 422, { error: 'name, phone and total are required' });
-    }
-    const saved = {
-      ...booking,
-      id: booking.id || `Y3-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
-      createdAt: booking.createdAt || new Date().toISOString(),
-    };
-    await collections.bookings.insertOne(saved);
-    return send(res, 201, saved);
-  }
-  if (parts.length === 2 && parts[0] === 'bookings' && req.method === 'PATCH') {
+  if (parts.length === 3 && parts[0] === 'admin' && parts[1] === 'artisans' && req.method === 'PATCH') {
+    if (!hasAdminSession(req)) return send(res, 401, { error: 'Admin authorization required' });
     const update = await body(req);
-    const result = await collections.bookings.findOneAndUpdate({ id: parts[1] }, { $set: update }, { returnDocument: 'after', projection: { _id: 0 } });
-    if (!result) return send(res, 404, { error: 'Booking not found' });
+    if (typeof update.suspended !== 'boolean') return send(res, 422, { error: 'A suspended boolean is required' });
+    const result = await collections.artisans.findOneAndUpdate(
+      { id: parts[2] }, { $set: { suspended: update.suspended } },
+      { returnDocument: 'after', projection: { _id: 0 } },
+    );
+    if (!result) return send(res, 404, { error: 'Artisan not found' });
     return send(res, 200, result);
-  }
-  if (parts.length === 3 && parts[0] === 'bookings' && parts[2] === 'messages' && req.method === 'GET') {
-    return send(res, 200, await collections.messages.find({ bookingId: parts[1] }, { projection: { _id: 0, bookingId: 0 } }).sort({ at: 1 }).toArray());
-  }
-  if (parts.length === 3 && parts[0] === 'bookings' && parts[2] === 'messages' && req.method === 'POST') {
-    const message = await body(req);
-    if (!message.text || !message.from) return send(res, 422, { error: 'text and from are required' });
-    const saved = { ...message, at: message.at || new Date().toISOString() };
-    await collections.messages.insertOne({ ...saved, bookingId: parts[1] });
-    return send(res, 201, saved);
   }
   return send(res, 404, { error: 'Route not found' });
 }

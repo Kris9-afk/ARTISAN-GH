@@ -1,6 +1,6 @@
-import { Star, MapPin, Phone } from 'lucide-react';
+import { Star, MapPin, Phone, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { Artisan } from '../data/market';
+import { artisanContactLinks, type Artisan } from '../data/market';
 import { useStore } from '../store';
 
 export function Stars({ value, size = 14 }: { value: number; size?: number }) {
@@ -54,6 +54,7 @@ export function ArtisanCard({ a, compact }: { a: Artisan; compact?: boolean }) {
   const { services } = useStore();
   const svc = services.find(service => service.id === a.trade);
   if (!svc) return null;
+  const contact = artisanContactLinks(a.phone);
   return (
     <div className="card-lift group relative overflow-hidden rounded-3xl bg-white border border-black/10 shadow-[0_10px_30px_-14px_rgba(6,42,31,0.25)]">
       <div className="relative h-44 overflow-hidden bg-[#062a1f]">
@@ -86,8 +87,8 @@ export function ArtisanCard({ a, compact }: { a: Artisan; compact?: boolean }) {
         )}
         <div className="mt-3 flex items-center gap-2">
           <Link to={`/artisan/${a.id}`} className="flex-1 rounded-xl bg-[#0b3d2e] px-3 py-2.5 text-center text-sm font-bold text-white transition hover:bg-[#147a5b]">View profile</Link>
-          <Link to={`/book?artisan=${a.id}`} className="flex-1 rounded-xl bg-[#e8a90c] px-3 py-2.5 text-center text-sm font-extrabold text-[#062a1f] transition hover:bg-[#fcd116]">Book now</Link>
-          <a href={`tel:${a.phone.replace(/\s/g, '')}`} className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 text-[#0b3d2e] hover:bg-[#f5ead2]" aria-label="call"><Phone size={16} /></a>
+          <a href={contact.call} className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 text-[#0b3d2e] hover:bg-[#f5ead2]" aria-label={`Call ${a.name}`}><Phone size={16} /></a>
+          <a href={contact.whatsapp} target="_blank" rel="noreferrer" className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 text-[#147a5b] hover:bg-[#147a5b]/10" aria-label={`WhatsApp ${a.name}`}><MessageCircle size={16} /></a>
         </div>
       </div>
     </div>

@@ -1,13 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { StoreProvider } from './store';
 import { Navbar, Footer, Toast, EmergencyFab, CookieNotice } from './components/layout';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import Artisans from './pages/Artisans';
 import ArtisanDetail from './pages/ArtisanDetail';
-import Booking from './pages/Booking';
-import Jobs from './pages/Jobs';
 import { HowItWorks, Join, Support } from './pages/Info';
+import Report from './pages/Report';
 import Admin from './pages/Admin';
 import PolicyPage from './pages/Policies';
 
@@ -22,8 +21,9 @@ export default function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/artisans" element={<Artisans />} />
             <Route path="/artisan/:id" element={<ArtisanDetail />} />
-            <Route path="/book" element={<Booking />} />
-            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/book" element={<Navigate to="/artisans" replace />} />
+            <Route path="/jobs" element={<Navigate to="/artisans" replace />} />
+            <Route path="/report" element={<Report />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/join" element={<Join />} />
             <Route path="/support" element={<Support />} />

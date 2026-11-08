@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Hammer, Menu, X, PhoneCall, ChevronRight, ShieldCheck, MapPin, MessageCircle } from 'lucide-react';
+import { Menu, X, PhoneCall, ChevronRight, ShieldCheck, MapPin, MessageCircle } from 'lucide-react';
 import { useStore } from '../store';
 import { KenteBar } from './ui';
 
 export function Logo({ light }: { light?: boolean }) {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="relative grid h-10 w-10 place-items-center rounded-2xl bg-[#0b3d2e] text-[#fcd116] shadow-lg">
-        <Hammer size={20} />
-        <span className="absolute -bottom-1 left-2 right-2 h-1 rounded-full kente-thin" />
+      <span className="relative block h-10 w-10 overflow-hidden rounded-2xl shadow-lg">
+        <img src="/brand-photo.svg" alt="ARTISAN-GH" className="h-full w-full object-cover" />
       </span>
       <span className="leading-none">
         <span className={`font-display text-[22px] font-black tracking-tight ${light ? 'text-white' : 'text-[#062a1f]'}`}>

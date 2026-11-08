@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">ARTISAN-GH</title>
+  <desc id="desc">A gold hammer on a forest-green background with Ghana flag colors.</desc>
+  <rect x="24" y="18" width="464" height="434" rx="168" fill="#064333"/>
+  <g fill="none" stroke="#fcd116" stroke-linecap="round" stroke-linejoin="round" stroke-width="16">
+    <path d="m248 247-104 104a18 18 0 0 0 25 25l105-105"/>
+    <path d="m247 242 19-22c5-19 2-36-16-53l-6-7h38c23 0 45 14 57 35l4 15 19 18-21 24-17 10-10 18-25-25-24-20-18-1Z"/>
+  </g>
+  <rect x="96" y="416" width="320" height="44" rx="22" fill="#ce1126"/>
+  <path d="M160 416h64v44h-64z" fill="#fcd116"/>
+  <path d="M224 416h76v44h-76z" fill="#006b3f"/>
+  <path d="M300 416h24v44h-24z" fill="#1a1a1a"/>
+  <path d="M324 416h24v44h-24z" fill="#fcd116"/>
+</svg>

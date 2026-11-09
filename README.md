@@ -9,11 +9,22 @@ npm run backend
 npm run dev
 ```
 
-The API persists artisans, bookings, chat messages, and admin settings in MongoDB.
-Configure `MONGO_CONNECTION_STRING` and `DB_NAME` in `backend/.env`. On first startup,
-the API creates validated collections and migrates the existing artisan catalog and
-legacy `backend/data.json` records. Set `VITE_API_URL` when the API is hosted somewhere other than
-`http://localhost:4000/api`.
+The API stores its records in PostgreSQL on Neon. Create a Neon project, copy its
+pooled connection string, then put it in `backend/.env`:
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
+ADMIN_ACCESS_CODE=choose-a-long-private-code
+```
+
+Keep the connection string private and never commit `backend/.env`. Run `npm run backend`; on first startup the API creates
+the required PostgreSQL tables and seeds artisans, services, reviews, and testimonials
+from the frontend catalog. It also imports legacy artisans from `backend/data.json`
+when the artisans table is empty. Check `http://localhost:4000/api/health` to confirm
+the API is running.
+
+Start the frontend separately with `npm run dev`. Set `VITE_API_URL` when the API is
+hosted somewhere other than `http://localhost:4000/api`.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

@@ -1,92 +1,163 @@
 const http = require('node:http');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { MongoClient } = require('mongodb');
+const { Pool } = require('pg');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const PORT = Number(process.env.PORT || 4000);
-const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING;
-const DB_NAME = process.env.DB_NAME || 'Y3FIX-GH';
+const DATABASE_URL = process.env.DATABASE_URL;
 const DEFAULT_ADMIN_CODE = (process.env.ADMIN_ACCESS_CODE || 'artisan233').trim().toLowerCase();
 const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
-if (!MONGO_CONNECTION_STRING) throw new Error('MONGO_CONNECTION_STRING is required');
+if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
 
-const mongo = new MongoClient(MONGO_CONNECTION_STRING);
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: { rejectUnauthorized: true },
+  max: 10,
+  connectionTimeoutMillis: 10000,
+});
 const adminSessions = new Map();
 const ADMIN_SESSION_TTL = 8 * 60 * 60 * 1000;
-let db;
 let collections;
 
-const schemas = {
-  artisans: {
-    bsonType: 'object',
-    required: ['id', 'name', 'trade', 'tradeLabel', 'city', 'phone'],
-    properties: {
-      id: { bsonType: 'string' }, name: { bsonType: 'string' }, trade: { bsonType: 'string' },
-      tradeLabel: { bsonType: 'string' }, city: { bsonType: 'string' }, phone: { bsonType: 'string' },
-      areas: { bsonType: 'array', items: { bsonType: 'string' } }, rating: { bsonType: 'number' },
-      reviewsCount: { bsonType: 'number' }, jobsDone: { bsonType: 'number' }, yearsExp: { bsonType: 'number' },
-      priceFrom: { bsonType: 'number' }, verified: { bsonType: 'bool' }, availableNow: { bsonType: 'bool' },
-      languages: { bsonType: 'array', items: { bsonType: 'string' } }, bio: { bsonType: 'string' },
-      skills: { bsonType: 'array', items: { bsonType: 'string' } }, color: { bsonType: 'string' },
-      initials: { bsonType: 'string' }, responseMins: { bsonType: 'number' }, image: { bsonType: 'string' },
-      suspended: { bsonType: 'bool' },
-    },
-  },
-  reports: {
-    bsonType: 'object',
-    required: ['id', 'reporterType', 'reporterName', 'reporterPhone', 'subjectType', 'subjectName', 'description', 'status', 'createdAt'],
-    properties: {
-      id: { bsonType: 'string' }, reporterType: { enum: ['customer', 'artisan'] },
-      reporterName: { bsonType: 'string' }, reporterPhone: { bsonType: 'string' },
-      subjectType: { enum: ['customer', 'artisan'] }, subjectName: { bsonType: 'string' },
-      artisanId: { bsonType: 'string' }, description: { bsonType: 'string' },
-      status: { enum: ['open', 'resolved', 'dismissed'] }, createdAt: { bsonType: 'string' },
-    },
-  },
-  settings: {
-    bsonType: 'object', required: ['key', 'salt', 'hash'],
-    properties: { key: { bsonType: 'string' }, salt: { bsonType: 'string' }, hash: { bsonType: 'string' } },
-  },
-  services: {
-    bsonType: 'object', required: ['id', 'name', 'tagline', 'icon', 'baseFrom', 'tasks'],
-    properties: {
-      id: { bsonType: 'string' }, name: { bsonType: 'string' }, twi: { bsonType: 'string' },
-      tagline: { bsonType: 'string' }, icon: { bsonType: 'string' }, image: { bsonType: 'string' },
-      baseFrom: { bsonType: 'number' }, popular: { bsonType: 'bool' },
-      tasks: { bsonType: 'array', items: { bsonType: 'object', required: ['id', 'label', 'price', 'unit'] } },
-    },
-  },
-  reviews: {
-    bsonType: 'object', required: ['id', 'artisanId', 'name', 'city', 'rating', 'text', 'date'],
-    properties: { id: { bsonType: 'string' }, artisanId: { bsonType: 'string' }, name: { bsonType: 'string' }, city: { bsonType: 'string' }, rating: { bsonType: 'number' }, text: { bsonType: 'string' }, date: { bsonType: 'string' } },
-  },
-  testimonials: {
-    bsonType: 'object', required: ['name', 'area', 'text', 'role'],
-    properties: { name: { bsonType: 'string' }, area: { bsonType: 'string' }, text: { bsonType: 'string' }, role: { bsonType: 'string' } },
-  },
+const collectionKeys = {
+  artisans: 'id',
+  reports: 'id',
+  settings: 'key',
+  services: 'id',
+  reviews: 'id',
+  testimonials: null,
 };
 
-async function setupDatabase() {
-  db = mongo.db(DB_NAME);
-  for (const [name, validator] of Object.entries(schemas)) {
-    try {
-      await db.createCollection(name, { validator: { $jsonSchema: validator }, validationLevel: 'strict' });
-    } catch (error) {
-      if (error.codeName !== 'NamespaceExists') throw error;
-      await db.command({ collMod: name, validator: { $jsonSchema: validator }, validationLevel: 'strict' });
-    }
+class PostgresCollection {
+  constructor(name, keyField) {
+    this.name = name;
+    this.keyField = keyField;
   }
-  collections = {
-    artisans: db.collection('artisans'), reports: db.collection('reports'), settings: db.collection('settings'),
-    services: db.collection('services'), reviews: db.collection('reviews'), testimonials: db.collection('testimonials'),
-  };
-  await collections.artisans.createIndex({ id: 1 }, { unique: true });
-  await collections.reports.createIndex({ id: 1 }, { unique: true });
-  await collections.settings.createIndex({ key: 1 }, { unique: true });
-  await collections.services.createIndex({ id: 1 }, { unique: true });
-  await collections.reviews.createIndex({ artisanId: 1, date: -1 });
+
+  where(filter = {}) {
+    const values = [];
+    const clauses = [];
+    for (const [field, condition] of Object.entries(filter)) {
+      if (field === 'id' || field === 'key') {
+        if (field !== this.keyField) throw new Error(`Unsupported ${field} filter for ${this.name}`);
+        values.push(String(condition));
+        clauses.push(`record_key = $${values.length}`);
+        continue;
+      }
+
+      if (!['suspended'].includes(field)) throw new Error(`Unsupported ${field} filter for ${this.name}`);
+      if (condition && typeof condition === 'object' && '$ne' in condition) {
+        values.push(String(condition.$ne));
+        clauses.push(`data ->> '${field}' IS DISTINCT FROM $${values.length}`);
+      } else {
+        values.push(String(condition));
+        clauses.push(`data ->> '${field}' = $${values.length}`);
+      }
+    }
+    return { values, clause: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '' };
+  }
+
+  async findOne(filter = {}) {
+    const { values, clause } = this.where(filter);
+    const result = await pool.query(`SELECT data FROM ${this.name} ${clause} LIMIT 1`, values);
+    return result.rows[0]?.data || null;
+  }
+
+  find(filter = {}) {
+    const { values, clause } = this.where(filter);
+    let order = '';
+    return {
+      sort(sortFields) {
+        const [field, direction] = Object.entries(sortFields)[0] || [];
+        if (field) {
+          values.push(field);
+          order = `ORDER BY data ->> $${values.length} ${direction < 0 ? 'DESC' : 'ASC'}, row_id ASC`;
+        }
+        return this;
+      },
+      toArray: async () => {
+        const result = await pool.query(`SELECT data FROM ${this.name} ${clause} ${order}`, values);
+        return result.rows.map((row) => row.data);
+      },
+    };
+  }
+
+  async countDocuments(filter = {}) {
+    const { values, clause } = this.where(filter);
+    const result = await pool.query(`SELECT COUNT(*)::int AS count FROM ${this.name} ${clause}`, values);
+    return result.rows[0].count;
+  }
+
+  async insertOne(document) {
+    const key = this.keyField ? String(document[this.keyField]) : null;
+    await pool.query(
+      `INSERT INTO ${this.name} (record_key, data) VALUES ($1, $2::jsonb)`,
+      [key, JSON.stringify(document)],
+    );
+    return { acknowledged: true };
+  }
+
+  async insertMany(documents) {
+    for (const document of documents) await this.insertOne(document);
+    return { acknowledged: true, insertedCount: documents.length };
+  }
+
+  async updateOne(filter, update) {
+    const { values, clause } = this.where(filter);
+    values.push(JSON.stringify(update.$set));
+    const result = await pool.query(
+      `UPDATE ${this.name} SET data = data || $${values.length}::jsonb ${clause} RETURNING row_id`,
+      values,
+    );
+    return { matchedCount: result.rowCount, modifiedCount: result.rowCount };
+  }
+
+  async findOneAndUpdate(filter, update) {
+    const { values, clause } = this.where(filter);
+    values.push(JSON.stringify(update.$set));
+    const result = await pool.query(
+      `UPDATE ${this.name} SET data = data || $${values.length}::jsonb ${clause} RETURNING data`,
+      values,
+    );
+    return result.rows[0]?.data || null;
+  }
+
+  async replaceOne(filter, document, options = {}) {
+    if (!options.upsert || !this.keyField) throw new Error(`Unsupported replacement for ${this.name}`);
+    const key = String(document[this.keyField]);
+    await pool.query(
+      `INSERT INTO ${this.name} (record_key, data) VALUES ($1, $2::jsonb)
+       ON CONFLICT (record_key) DO UPDATE SET data = EXCLUDED.data`,
+      [key, JSON.stringify(document)],
+    );
+    return { acknowledged: true };
+  }
+
+  async distinct(field) {
+    if (field !== 'city' || this.name !== 'artisans') throw new Error(`Unsupported distinct field ${field}`);
+    const result = await pool.query(
+      `SELECT DISTINCT data ->> $1 AS value FROM ${this.name} WHERE data ->> $1 IS NOT NULL`,
+      [field],
+    );
+    return result.rows.map((row) => row.value);
+  }
+}
+
+async function setupDatabase() {
+  for (const name of Object.keys(collectionKeys)) {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS ${name} (
+        row_id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+        record_key TEXT UNIQUE,
+        data JSONB NOT NULL
+      )
+    `);
+  }
+  collections = Object.fromEntries(
+    Object.entries(collectionKeys).map(([name, keyField]) => [name, new PostgresCollection(name, keyField)]),
+  );
   await initializeAdminCode();
 }
 
@@ -94,13 +165,6 @@ async function initializeAdminCode() {
   const existing = await collections.settings.findOne({ key: 'admin-code' });
   if (!existing) {
     await collections.settings.insertOne({ key: 'admin-code', ...hashAdminCode(DEFAULT_ADMIN_CODE) });
-    return;
-  }
-
-  const defaultHash = hashAdminCode(DEFAULT_ADMIN_CODE, existing.salt);
-  const storedMatchesDefault = existing.hash === defaultHash.hash;
-  if (!storedMatchesDefault) {
-    await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(DEFAULT_ADMIN_CODE) });
   }
 }
 
@@ -159,14 +223,7 @@ async function adminCodeMatches(code) {
 
   const expected = Buffer.from(stored.hash, 'hex');
   const actual = Buffer.from(hashAdminCode(normalizedCode, stored.salt).hash, 'hex');
-  const match = expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
-
-  if (!match && normalizedCode === DEFAULT_ADMIN_CODE) {
-    await collections.settings.updateOne({ key: 'admin-code' }, { $set: hashAdminCode(DEFAULT_ADMIN_CODE) });
-    return true;
-  }
-
-  return match;
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
 }
 
 function createAdminSession() {
@@ -344,10 +401,10 @@ const server = http.createServer((req, res) => {
 });
 
 async function start() {
-  await mongo.connect();
+  await pool.query('SELECT 1');
   await setupDatabase();
   await migrateJsonData();
   server.listen(PORT, () => console.log(`Y3FIX-GH API listening on http://localhost:${PORT}`));
 }
 
-start().catch(error => { console.error('Unable to start MongoDB-backed API', error); process.exitCode = 1; });
+start().catch(error => { console.error('Unable to start PostgreSQL-backed API', error); process.exitCode = 1; });

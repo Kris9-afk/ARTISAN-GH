@@ -30,8 +30,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const api = {
   loginAdmin: (code: string) => request<{ authenticated: boolean; token: string }>('/admin/login', { method: 'POST', body: JSON.stringify({ code }) }),
-  changeAdminCode: (currentCode: string, newCode: string) =>
-    request<{ changed: boolean }>('/admin/change-code', { method: 'POST', body: JSON.stringify({ currentCode, newCode }) }),
   getArtisans: () => request<Artisan[]>('/artisans'),
   getAdminArtisans: () => request<Artisan[]>('/admin/artisans'),
   getServices: () => request<Service[]>('/services'),
@@ -48,4 +46,3 @@ export const api = {
   updateArtisan: (id: string, update: Partial<Artisan>) =>
     request<Artisan>(`/admin/artisans/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(update) }),
 };
-

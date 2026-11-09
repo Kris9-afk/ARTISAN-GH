@@ -20,7 +20,7 @@ export interface Artisan {
 }
 export interface Review { id: string; artisanId: string; name: string; city: string; rating: number; text: string; date: string }
 
-export const contactNumber = (phone: string) => {
+const contactNumber = (phone: string) => {
   const digits = phone.replace(/\D/g, '');
   return digits.startsWith('0') ? `233${digits.slice(1)}` : digits;
 };
@@ -164,6 +164,4 @@ export const TESTIMONIALS = [
   { name: 'Dr. Kofi Asare', area: 'Ahodwo, Kumasi', text: 'The electrician’s profile showed her experience and service area. I called to ask a few questions before arranging the visit.', role: 'Clinic owner' },
   { name: 'Mawuena K.', area: 'Ho, Volta', text: 'I could compare profiles and reviews, then contact an artisan directly to discuss the work and price.', role: 'Student' },
 ];
-
-export const fmtCedi = (n: number) => `GH₵${n.toLocaleString('en-GH')}`;
 

@@ -36,9 +36,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
     #ce1126 0 26px, #fcd116 26px 52px, #006b3f 52px 78px, #1a1a1a 78px 88px,
     #fcd116 88px 96px, #ce1126 96px 122px, #006b3f 122px 148px);
 }
-.kente-thin {
-  background: linear-gradient(90deg, #ce1126 0%, #ce1126 22%, #fcd116 22%, #fcd116 45%, #006b3f 45%, #006b3f 70%, #1a1a1a 70%, #1a1a1a 78%, #fcd116 78%, #fcd116 86%, #ce1126 86%);
-}
 .adinkra-bg {
   background-color: #062a1f;
   background-image: radial-gradient(rgba(232,169,12,0.14) 1.5px, transparent 1.5px);
@@ -57,7 +54,5 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: #f5ead2; }
 ::-webkit-scrollbar-thumb { background: #0b3d2e; border-radius: 8px; }
-@keyframes floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
-.animate-floaty { animation: floaty 5s ease-in-out infinite; }
 @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(20,122,91,.5);} 70% { box-shadow: 0 0 0 14px rgba(20,122,91,0);} 100% { box-shadow: 0 0 0 0 rgba(20,122,91,0);} }
 .pulse-ring { animation: pulse-ring 2.2s infinite; }

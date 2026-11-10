@@ -3,6 +3,7 @@
 The React application is in `frontend/` and the Node API is in `backend/`.
 
 The React frontend runs on port 5173 and the standalone Node API runs on port 4000.
+During development, Vite forwards `/api` requests to the backend.
 
 ```bash
 npm run backend
@@ -23,8 +24,11 @@ from the frontend catalog. It also imports legacy artisans from `backend/data.js
 when the artisans table is empty. Check `http://localhost:4000/api/health` to confirm
 the API is running.
 
-Start the frontend separately with `npm run dev`. Set `VITE_API_URL` when the API is
-hosted somewhere other than `http://localhost:4000/api`.
+Start the frontend separately with `npm run dev`, or start both with `npm run dev:full`.
+When deploying the frontend and API on different hosts, set `VITE_API_URL` to the
+public API base URL (including `/api`) in the frontend build environment, for example
+`https://your-api-host.example/api`. This variable is public; do not put database
+credentials or admin codes in frontend environment variables.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

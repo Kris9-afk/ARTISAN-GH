@@ -1,34 +1,42 @@
 ## Y3FIX-GH frontend and backend
 
-The React application is in `frontend/` and the Node API is in `backend/`.
+The React application is in `frontend/`; the Node API is in `backend/`. In production,
+host the frontend and API as web services and use Neon for PostgreSQL. Neon is the
+database host; it does not run the Node API.
 
-The React frontend runs on port 5173 and the standalone Node API runs on port 4000.
-During development, Vite forwards `/api` requests to the backend.
+### Deploy the API to Render
 
-```bash
-npm run backend
-npm run dev
-```
+The root `render.yaml` defines the API web service. In Render, create a Blueprint from
+this repository and provide these secret environment variables for the API service:
 
-The API stores its records in PostgreSQL on Neon. Create a Neon project, copy its
-pooled connection string, then put it in `backend/.env`:
+- `DATABASE_URL`: the pooled Neon connection string, including `sslmode=require`
+- `ADMIN_ACCESS_CODE`: a long, private admin code
+
+Do not commit either value or expose them as `VITE_` variables. On startup, the API
+creates its PostgreSQL tables and seeds artisans, services, reviews, and testimonials
+from the frontend catalog. It also imports legacy artisans from `backend/data.json`
+when the artisans table is empty. Render checks `/api/health` to confirm the service
+is healthy.
+
+After Render creates the API service, set `VITE_API_URL` in the frontend host's build
+environment to the public API URL ending in `/api` (for example,
+`https://artisan-gh-api.onrender.com/api`) and redeploy the frontend. The frontend
+host must be `https://artisan-gh.onrender.com` or the API's `FRONTEND_ORIGIN` value
+must be changed to match the actual frontend origin.
+
+### Local development (optional)
+
+The local Vite server runs on port 5173 and proxies `/api` requests to a local API on
+port 4000. To use Neon from local development, create `backend/.env` (ignored by Git):
 
 ```env
 DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
 ADMIN_ACCESS_CODE=choose-a-long-private-code
 ```
 
-Keep the connection string private and never commit `backend/.env`. Run `npm run backend`; on first startup the API creates
-the required PostgreSQL tables and seeds artisans, services, reviews, and testimonials
-from the frontend catalog. It also imports legacy artisans from `backend/data.json`
-when the artisans table is empty. Check `http://localhost:4000/api/health` to confirm
-the API is running.
-
-Start the frontend separately with `npm run dev`, or start both with `npm run dev:full`.
-When deploying the frontend and API on different hosts, set `VITE_API_URL` to the
-public API base URL (including `/api`) in the frontend build environment, for example
-`https://your-api-host.example/api`. This variable is public; do not put database
-credentials or admin codes in frontend environment variables.
+Run `npm run dev:full` to start both local processes, or `npm run backend` and
+`npm run dev` separately. Local development is not required for the deployed
+application; the hosted frontend calls the Render API through `VITE_API_URL`.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

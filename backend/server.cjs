@@ -404,7 +404,7 @@ async function start() {
   await pool.query('SELECT 1');
   await setupDatabase();
   await migrateJsonData();
-  server.listen(PORT, () => console.log(`Y3FIX-GH API listening on http://localhost:${PORT}`));
+  server.listen(PORT, () => console.log(`Y3FIX-GH API listening on port ${PORT}`));
 }
 
 start().catch(error => { console.error('Unable to start PostgreSQL-backed API', error); process.exitCode = 1; });

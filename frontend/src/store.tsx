@@ -10,7 +10,7 @@ interface Store {
   cities: string[];
   favs: string[];
   toggleFav: (id: string) => void;
-  addArtisan: (artisan: Artisan) => void;
+  addArtisan: (artisan: Artisan) => Promise<Artisan>;
   updateArtisan: (id: string, update: Partial<Artisan>) => Promise<Artisan>;
   addReview: (review: Review) => void;
   toast: string | null;
@@ -66,9 +66,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleFav = (id: string) => setFavs(f => (f.includes(id) ? f.filter(x => x !== id) : [...f, id]));
-  const addArtisan = (artisan: Artisan) => {
-    setArtisans(current => [artisan, ...current.filter(existing => existing.id !== artisan.id)]);
-    api.createArtisan(artisan).catch(error => console.error('Could not save artisan:', error));
+  const addArtisan = async (artisan: Artisan) => {
+    const saved = await api.createArtisan(artisan);
+    setArtisans(current => [saved, ...current.filter(existing => existing.id !== saved.id)]);
+    return saved;
   };
   const updateArtisan = async (id: string, update: Partial<Artisan>) => {
     const saved = await api.updateArtisan(id, update);

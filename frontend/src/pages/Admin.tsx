@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Flag, LockKeyhole, Plus, RotateCcw, ShieldCheck, UserPlus } from 'lucide-react';
 import { type Artisan, type TradeId } from '../data/market';
@@ -13,37 +13,61 @@ export default function Admin() {
   const [code, setCode] = useState('');
   const [adminArtisans, setAdminArtisans] = useState<Artisan[]>([]);
   const [reports, setReports] = useState<MarketplaceReport[]>([]);
+  const [loading, setLoading] = useState(authenticated);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [savingArtisan, setSavingArtisan] = useState(false);
   const [form, setForm] = useState({
     name: '', trade: 'plumbing' as TradeId, city: 'Accra', phone: '', yearsExp: '3',
     skills: '', bio: '', availableNow: true,
   });
 
-  useEffect(() => {
-    if (!authenticated) return;
-    Promise.all([api.getAdminArtisans(), api.getReports()])
-      .then(([artisanData, reportData]) => { setAdminArtisans(artisanData); setReports(reportData); })
-      .catch(error => {
-        showToast(error instanceof Error && error.message.includes('401') ? 'Admin session expired. Sign in again.' : 'Could not load admin data. Check the backend connection.');
+  const loadAdminData = useCallback(async () => {
+    try {
+      const [artisanData, reportData] = await Promise.all([api.getAdminArtisans(), api.getReports()]);
+      setAdminArtisans(artisanData);
+      setReports(reportData);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not load admin data';
+      setLoadError(message);
+      if (message.includes('401')) {
         sessionStorage.removeItem('agh-admin-token');
         setAuthenticated(false);
-      });
-  }, [authenticated, showToast]);
+        showToast('Admin session expired. Sign in again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    const timer = window.setTimeout(() => void loadAdminData(), 0);
+    return () => window.clearTimeout(timer);
+  }, [authenticated, loadAdminData]);
 
   const signIn = (event: FormEvent) => {
     event.preventDefault();
     const lowerCode = code.trim().toLowerCase();
+    setLoadError(null);
     api.loginAdmin(lowerCode).then(({ token }) => {
       sessionStorage.setItem('agh-admin-token', token);
+      setLoading(true);
       setAuthenticated(true);
       setCode('');
     }).catch(error => {
-      const invalidCode = error instanceof Error && error.message.includes('401');
-      showToast(invalidCode ? 'Invalid admin access code' : 'Admin service unavailable. Check the backend and database connection.');
+      if (error instanceof Error && error.message.includes('401')) {
+        showToast('Invalid admin access code');
+      } else if (error instanceof TypeError) {
+        showToast('Cannot reach the admin API. The local API server may be stopped.');
+      } else {
+        showToast(error instanceof Error ? `Admin sign-in failed: ${error.message}` : 'Admin sign-in failed. Please try again.');
+      }
     });
   };
 
-  const add = (event: FormEvent) => {
+  const add = async (event: FormEvent) => {
     event.preventDefault();
+    if (savingArtisan) return;
     const service = services.find(item => item.id === form.trade);
     if (!service || !form.name.trim() || !form.phone.trim()) {
       showToast('Name, trade and phone are required');
@@ -60,10 +84,17 @@ export default function Admin() {
       color: '#0b3d2e', initials: form.name.trim().split(/\s+/).map(word => word[0]).join('').slice(0, 2).toUpperCase(),
       responseMins: 30,
     };
-    addArtisan(artisan);
-    setForm(current => ({ ...current, name: '', phone: '', skills: '', bio: '' }));
-    setAdminArtisans(current => [artisan, ...current.filter(existing => existing.id !== artisan.id)]);
-    showToast(`${artisan.name} added to the artisan directory`);
+    setSavingArtisan(true);
+    try {
+      const saved = await addArtisan(artisan);
+      setForm(current => ({ ...current, name: '', phone: '', skills: '', bio: '' }));
+      setAdminArtisans(current => [saved, ...current.filter(existing => existing.id !== saved.id)]);
+      showToast(`${saved.name} added to the artisan directory`);
+    } catch (error) {
+      showToast(error instanceof Error ? `Could not add artisan: ${error.message}` : 'Could not add artisan');
+    } finally {
+      setSavingArtisan(false);
+    }
   };
 
   const toggleSuspended = async (artisan: Artisan) => {
@@ -135,7 +166,7 @@ export default function Admin() {
             <div className="flex items-center justify-between gap-3 pt-0.5">
               <label className="flex items-center gap-2 text-xs font-bold text-black/60"><input type="checkbox" checked={form.availableNow} onChange={event => setForm({ ...form, availableNow: event.target.checked })} /> Available for jobs now</label>
             </div>
-            <button className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#e8a90c] px-4 py-3 text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116]"><Plus size={16} /> Add artisan</button>
+            <button disabled={savingArtisan} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#e8a90c] px-4 py-3 text-sm font-extrabold text-[#062a1f] hover:bg-[#fcd116] disabled:cursor-wait disabled:opacity-60"><Plus size={16} /> {savingArtisan ? 'Saving artisan…' : 'Add artisan'}</button>
           </form>
         </section>
 
@@ -156,6 +187,11 @@ export default function Admin() {
               <span className="rounded-full bg-[#f5ead2] px-3 py-1 text-xs font-extrabold text-[#6b5510]">{adminArtisans.length} total</span>
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {loading && <p className="text-sm font-semibold text-black/50">Loading admin data…</p>}
+              {loadError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#ce1126]/5 p-3 text-sm text-[#9f1020]">
+                <span>Could not load admin data: {loadError}</span>
+                <button type="button" onClick={() => { setLoading(true); setLoadError(null); void loadAdminData(); }} className="rounded-lg border border-current px-3 py-1.5 text-xs font-bold">Retry</button>
+              </div>}
               {adminArtisans.map(artisan => (
                 <div key={artisan.id} className="flex items-center gap-3 rounded-2xl border border-black/10 p-3">
                   {artisan.image
@@ -182,7 +218,7 @@ export default function Admin() {
           </div>
           <div className="rounded-[26px] border border-black/10 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-3"><div><h2 className="font-display text-xl font-black text-[#062a1f]">Reports</h2><p className="mt-1 text-xs font-semibold text-black/45">Review concerns submitted by customers and artisans.</p></div><span className="rounded-full bg-[#147a5b]/10 px-3 py-1 text-xs font-extrabold text-[#147a5b]">{reports.filter(report => report.status === 'open').length} open</span></div>
-            {reports.length === 0 ? <p className="mt-6 rounded-2xl bg-[#f5ead2]/50 p-5 text-center text-sm font-semibold text-black/50">No reports have been submitted.</p> : <div className="mt-4 space-y-3">{reports.map(report => {
+            {loading ? <p className="mt-6 text-center text-sm font-semibold text-black/50">Loading reports…</p> : loadError ? <p role="alert" className="mt-6 rounded-2xl bg-[#ce1126]/5 p-5 text-center text-sm font-semibold text-[#9f1020]">Reports are unavailable until admin data loads successfully.</p> : reports.length === 0 ? <p className="mt-6 rounded-2xl bg-[#f5ead2]/50 p-5 text-center text-sm font-semibold text-black/50">No reports have been submitted.</p> : <div className="mt-4 space-y-3">{reports.map(report => {
               const reportedArtisan = report.artisanId ? adminArtisans.find(artisan => artisan.id === report.artisanId) : undefined;
               return <article key={report.id} className="rounded-2xl border border-black/10 p-4">
                 <div className="flex flex-wrap items-start justify-between gap-2">

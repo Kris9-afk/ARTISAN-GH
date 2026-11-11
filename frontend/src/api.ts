@@ -1,6 +1,7 @@
 import type { Artisan, Review, Service } from './data/market';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+const API_URL = import.meta.env.VITE_API_URL
+  || (import.meta.env.PROD ? 'https://artisan-gh-api.onrender.com/api' : '/api');
 
 export interface MarketplaceReport {
   id: string;

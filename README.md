@@ -18,11 +18,12 @@ from the frontend catalog. It also imports legacy artisans from `backend/data.js
 when the artisans table is empty. Render checks `/api/health` to confirm the service
 is healthy.
 
-After Render creates the API service, set `VITE_API_URL` in the frontend host's build
-environment to the public API URL ending in `/api` (for example,
-`https://artisan-gh-api.onrender.com/api`) and redeploy the frontend. The frontend
-host must be `https://artisan-gh.onrender.com` or the API's `FRONTEND_ORIGIN` value
-must be changed to match the actual frontend origin.
+The production frontend defaults to `https://artisan-gh-api.onrender.com/api`, which
+matches the Blueprint's API service name. If Render assigns a different API URL, set
+`VITE_API_URL` in the frontend host's build environment to that public URL ending in
+`/api` and redeploy the frontend. The frontend host must be
+`https://artisan-gh.onrender.com` or the API's `FRONTEND_ORIGIN` value must be changed
+to match the actual frontend origin.
 
 ### Local development (optional)
 

@@ -19,6 +19,7 @@ export default defineConfig({
     },
     preview: {
       allowedHosts: ['artisan-gh.onrender.com'],
+      proxy: {},
     },
     envPrefix: 'VITE_',
 })

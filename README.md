@@ -30,10 +30,11 @@ matches the Blueprint's API service name. If Render assigns a different API URL,
 `VITE_API_URL` to the Vercel project's environment variables, set it to the public API
 URL ending in `/api`, and redeploy the frontend.
 
-After the first Vercel deployment, set the Render API service's `FRONTEND_ORIGIN`
-environment variable to the exact production Vercel origin (for example,
-`https://your-project.vercel.app`, with no path or trailing slash), then redeploy the
-API service. Use your stable production domain if you have configured a custom domain.
+Set the Render API service's `FRONTEND_ORIGIN` environment variable to the allowed
+frontend origins, separated by commas and with no paths or trailing slashes. The
+Blueprint includes `https://artisan-gh.onrender.com` and
+`https://artisan-gh-delta.vercel.app`; replace or extend these with your actual
+production domains if they change, then redeploy the API service.
 
 Vercel's CDN can serve the frontend close to visitors, improving page and asset load
 times. API requests still depend on Render and the database; a sleeping free Render

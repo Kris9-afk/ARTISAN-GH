@@ -7,6 +7,10 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const PORT = Number(process.env.PORT || 4000);
 const DATABASE_URL = process.env.DATABASE_URL;
 const DEFAULT_ADMIN_CODE = (process.env.ADMIN_ACCESS_CODE || 'artisan233').trim().toLowerCase();
+const FRONTEND_ORIGINS = (process.env.FRONTEND_ORIGIN || '*')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
 
 if (!DATABASE_URL) throw new Error('DATABASE_URL is required');
@@ -246,11 +250,20 @@ function hasAdminSession(req) {
 function send(res, status, body) {
   res.writeHead(status, {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': process.env.FRONTEND_ORIGIN || '*',
     'Access-Control-Allow-Methods': allowedMethods.join(', '),
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   });
   res.end(JSON.stringify(body));
+}
+
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  if (FRONTEND_ORIGINS.includes('*')) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else if (origin && FRONTEND_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
 }
 
 async function body(req) {
@@ -394,6 +407,7 @@ async function handle(req, res) {
 }
 
 const server = http.createServer((req, res) => {
+  applyCors(req, res);
   handle(req, res).catch((error) => {
     console.error(error);
     send(res, error.status || 500, { error: error.status ? error.message : 'Internal server error' });

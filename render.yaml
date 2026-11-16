@@ -12,4 +12,4 @@ services:
       - key: ADMIN_ACCESS_CODE
         sync: false
       - key: FRONTEND_ORIGIN
-        value: https://artisan-gh.onrender.com
+        value: "https://artisan-gh.onrender.com,https://artisan-gh-delta.vercel.app"

@@ -35,25 +35,12 @@ export function Navbar() {
     <header className="sticky top-0 z-50">
       <KenteBar h="h-1.5" />
       <div className="bg-[#fff8ec]/95 backdrop-blur border-b border-black/10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="grid h-[68px] grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center lg:h-[72px]">
-            <a href="tel:0302740000" className="hidden items-center gap-2 justify-self-start rounded-full border border-black/10 px-4 py-2.5 text-sm font-bold text-[#0b3d2e] hover:bg-[#f5ead2] lg:inline-flex">
-              <PhoneCall size={15} /> 030 274 0000
-            </a>
-            <button className="grid h-10 w-10 place-items-center justify-self-start rounded-xl border border-black/10 lg:hidden" onClick={() => setOpen(!open)} aria-label="menu">
-              {open ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            <div className="col-start-2 row-start-1 justify-self-center">
-              <Logo />
-            </div>
-            <div className="col-start-3 row-start-1 flex items-center justify-self-end gap-2">
-              <InstallAppButton className="inline-flex shrink-0 items-center gap-2 rounded-full border border-black/10 px-3 py-2.5 text-sm font-bold text-[#0b3d2e] hover:bg-[#f5ead2] lg:px-4" />
-              <Link to="/artisans" className="hidden rounded-full bg-[#e8a90c] px-5 py-2.5 text-sm font-extrabold text-[#062a1f] shadow-[0_8px_20px_-8px_rgba(232,169,12,0.8)] transition hover:bg-[#fcd116] lg:inline-flex">
-                Find an artisan
-              </Link>
-            </div>
-          </div>
-          <nav className="hidden h-12 items-center justify-center gap-1 border-t border-black/10 lg:flex">
+        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6">
+          <Logo />
+          <InstallAppButton
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-black/10 px-3 py-2.5 text-sm font-bold text-[#0b3d2e] hover:bg-[#f5ead2] sm:px-4"
+          />
+          <nav className="hidden items-center gap-1 lg:flex">
             {LINKS.map(l => (
               <NavLink key={l.to} to={l.to}
                 className={({ isActive }) => `rounded-full px-4 py-2 text-sm font-bold transition ${isActive || loc.pathname === l.to ? 'bg-[#0b3d2e] text-white' : 'text-[#062a1f]/70 hover:bg-[#f5ead2] hover:text-[#062a1f]'}`}>
@@ -61,8 +48,20 @@ export function Navbar() {
               </NavLink>
             ))}
           </nav>
+          <div className="hidden items-center gap-2 lg:flex">
+            <a href="tel:0302740000" className="inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-2.5 text-sm font-bold text-[#0b3d2e] hover:bg-[#f5ead2]">
+              <PhoneCall size={15} /> 030 274 0000
+            </a>
+            <Link to="/artisans" className="rounded-full bg-[#e8a90c] px-5 py-2.5 text-sm font-extrabold text-[#062a1f] shadow-[0_8px_20px_-8px_rgba(232,169,12,0.8)] transition hover:bg-[#fcd116]">
+              Find an artisan
+            </Link>
+          </div>
+          <button className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 lg:hidden" onClick={() => setOpen(!open)} aria-label="menu">
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          </div>
           {open && (
-            <div className="border-t border-black/10 bg-[#fff8ec] pb-5 pt-2 lg:hidden">
+            <div className="border-t border-black/10 bg-[#fff8ec] px-4 pb-5 pt-2 lg:hidden">
               {LINKS.map(l => (
                 <NavLink key={l.to} to={l.to} onClick={() => setOpen(false)}
                   className={({ isActive }) => `flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-bold ${isActive ? 'bg-[#0b3d2e] text-white' : 'text-[#062a1f]'}`}>
@@ -73,7 +72,6 @@ export function Navbar() {
             </div>
           )}
         </div>
-      </div>
     </header>
   );
 }

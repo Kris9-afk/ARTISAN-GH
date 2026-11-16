@@ -40,6 +40,15 @@ Vercel's CDN can serve the frontend close to visitors, improving page and asset 
 times. API requests still depend on Render and the database; a sleeping free Render
 service can take longer to answer its first request after inactivity.
 
+### Install on a phone
+
+The website can be installed as a PWA from a supported mobile browser. Visit the
+production site over HTTPS and tap **Install app** or use the browser's install
+option. On iPhone or iPad, open the site in Safari, tap **Share**, then choose
+**Add to Home Screen**. The app shell is cached, and public images are cached as they
+are viewed. Marketplace data and other API-backed features still require an internet
+connection.
+
 ### Local development (optional)
 
 The local Vite server runs on port 5173 and proxies `/api` requests to a local API on

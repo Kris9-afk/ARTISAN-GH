@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, PhoneCall, ChevronRight, ShieldCheck, MapPin, MessageCircle } from 'lucide-react';
 import { useStore } from '../store';
 import { KenteBar } from './ui';
+import { InstallAppButton } from './InstallAppButton';
 
 export function Logo({ light }: { light?: boolean }) {
   return (
@@ -36,6 +37,9 @@ export function Navbar() {
       <div className="bg-[#fff8ec]/95 backdrop-blur border-b border-black/10">
         <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6">
           <Logo />
+          <InstallAppButton
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-black/10 px-3 py-2.5 text-sm font-bold text-[#0b3d2e] hover:bg-[#f5ead2] sm:px-4"
+          />
           <nav className="hidden items-center gap-1 lg:flex">
             {LINKS.map(l => (
               <NavLink key={l.to} to={l.to}

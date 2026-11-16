@@ -61,7 +61,7 @@ export function InstallAppButton({ className }: { className: string }) {
     <>
       <button type="button" className={className} onClick={() => void install()} aria-label="Install app">
         <Download size={16} />
-        <span className="hidden sm:inline lg:hidden xl:inline">Install app</span>
+        <span className="hidden min-[360px]:inline lg:hidden xl:inline">Install app</span>
       </button>
       {showInstructions && (
         <div className="fixed inset-0 z-[120] grid place-items-center bg-black/50 p-4" role="presentation">

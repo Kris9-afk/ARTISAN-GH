@@ -59,19 +59,19 @@ export function Navbar() {
           <button className="grid h-10 w-10 place-items-center rounded-xl border border-black/10 lg:hidden" onClick={() => setOpen(!open)} aria-label="menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
-          </div>
-          {open && (
-            <div className="border-t border-black/10 bg-[#fff8ec] px-4 pb-5 pt-2 lg:hidden">
-              {LINKS.map(l => (
-                <NavLink key={l.to} to={l.to} onClick={() => setOpen(false)}
-                  className={({ isActive }) => `flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-bold ${isActive ? 'bg-[#0b3d2e] text-white' : 'text-[#062a1f]'}`}>
-                  {l.label} <ChevronRight size={16} />
-                </NavLink>
-              ))}
-              <Link to="/artisans" onClick={() => setOpen(false)} className="mt-2 block rounded-xl bg-[#e8a90c] px-3 py-3 text-center text-[15px] font-extrabold text-[#062a1f]">Find an artisan</Link>
-            </div>
-          )}
         </div>
+        {open && (
+          <div className="border-t border-black/10 bg-[#fff8ec] px-4 pb-5 pt-2 lg:hidden">
+            {LINKS.map(l => (
+              <NavLink key={l.to} to={l.to} onClick={() => setOpen(false)}
+                className={({ isActive }) => `flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-bold ${isActive ? 'bg-[#0b3d2e] text-white' : 'text-[#062a1f]'}`}>
+                {l.label} <ChevronRight size={16} />
+              </NavLink>
+            ))}
+            <Link to="/artisans" onClick={() => setOpen(false)} className="mt-2 block rounded-xl bg-[#e8a90c] px-3 py-3 text-center text-[15px] font-extrabold text-[#062a1f]">Find an artisan</Link>
+          </div>
+        )}
+      </div>
     </header>
   );
 }

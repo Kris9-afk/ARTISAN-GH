@@ -1,8 +1,8 @@
 ## Y3FIX-GH frontend and backend
 
 The React application is in `frontend/`; the Node API is in `backend/`. In production,
-host the frontend and API as web services and use Neon for PostgreSQL. Neon is the
-database host; it does not run the Node API.
+host the frontend on Vercel, the API on Render, and use Neon for PostgreSQL. Neon is
+the database host; it does not run the Node API.
 
 ### Deploy the API to Render
 
@@ -18,12 +18,26 @@ from the frontend catalog. It also imports legacy artisans from `backend/data.js
 when the artisans table is empty. Render checks `/api/health` to confirm the service
 is healthy.
 
+### Deploy the frontend to Vercel
+
+Import this repository into Vercel with the repository root as the project root.
+`vercel.json` configures the Vite build output and client-side routes, so direct visits
+or refreshes on frontend routes load correctly. The build command is `npm run build`
+and the output directory is `dist`.
+
 The production frontend defaults to `https://artisan-gh-api.onrender.com/api`, which
-matches the Blueprint's API service name. If Render assigns a different API URL, set
-`VITE_API_URL` in the frontend host's build environment to that public URL ending in
-`/api` and redeploy the frontend. The frontend host must be
-`https://artisan-gh.onrender.com` or the API's `FRONTEND_ORIGIN` value must be changed
-to match the actual frontend origin.
+matches the Blueprint's API service name. If Render assigns a different API URL, add
+`VITE_API_URL` to the Vercel project's environment variables, set it to the public API
+URL ending in `/api`, and redeploy the frontend.
+
+After the first Vercel deployment, set the Render API service's `FRONTEND_ORIGIN`
+environment variable to the exact production Vercel origin (for example,
+`https://your-project.vercel.app`, with no path or trailing slash), then redeploy the
+API service. Use your stable production domain if you have configured a custom domain.
+
+Vercel's CDN can serve the frontend close to visitors, improving page and asset load
+times. API requests still depend on Render and the database; a sleeping free Render
+service can take longer to answer its first request after inactivity.
 
 ### Local development (optional)
 

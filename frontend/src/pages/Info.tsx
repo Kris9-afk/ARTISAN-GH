@@ -61,8 +61,11 @@ export function Join() {
     trade: f.trade.includes(trade) ? f.trade.filter(item => item !== trade) : [...f.trade, trade],
   }));
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <div className="grid gap-6 lg:grid-cols-2">
+    <div
+      className="w-full bg-cover bg-center px-4 py-10 sm:px-6"
+      style={{ backgroundImage: "linear-gradient(rgba(255, 248, 236, 0.45), rgba(255, 248, 236, 0.45)), url('/images/artisan-training.jpg')" }}
+    >
+      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-2">
         <div>
           <SectionHead kicker="Make your work easier to find" title="List your artisan profile" sub="Share your trade, service areas, experience, and contact details so local customers can reach you directly." />
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
